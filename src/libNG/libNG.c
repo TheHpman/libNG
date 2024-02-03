@@ -16,9 +16,9 @@
 	VARIABLES
 **************************************/
 // vblank / frame counters
-u16	libNG_vbl_flag;      // internal
-vu32	libNG_droppedFrames; // dropped frames
-vu32	libNG_frameCounter;  //"real" frame count
+u16	libNG_vbl_flag;		// internal
+vu32	libNG_droppedFrames;	// dropped frames
+vu32	libNG_frameCounter;	//"real" frame count
 void	*VBL_callBack;
 void	*VBL_skipCallBack;
 // 18 bytes
@@ -36,13 +36,13 @@ u16	libNG_drawListReady;
 // default values will take about 10KB RAM
 
 // timer interrupt stuff
-u16	LSPCmode;	    // mode to preserve
-u16	libNG_TIfunc[34]; // irq code space, internal
-u32	TIbase;		    // timer base value
-u32	TIreload;	    // timer reload value
-u16	*TInextTable;   // table for next frame
-u32	TIcurrentBase;  // current frame base timer
-u32	*TIcurrentData; // current frame data
+u16	LSPCmode;		// mode to preserve
+u16	libNG_TIfunc[34];	// irq code space, internal
+u32	TIbase;			// timer base value
+u32	TIreload;		// timer reload value
+u16	*TInextTable;		// table for next frame
+u32	TIcurrentBase;		// current frame base timer
+u32	*TIcurrentData;		// current frame data
 // 90 bytes
 
 // scratchpads

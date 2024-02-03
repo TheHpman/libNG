@@ -3,24 +3,14 @@
 	.align	2
 
 ;* BUG: pools will glitch if trying to render a 0 sized frame
-;*		it's not possible to produce such a frame atm tho...
+;*	it's not possible for tools to produce such a frame atm tho...
 
 
 ;*/******************************************************************************
 ;*				spritePoolInit
 ;*******************************************************************************/
 
-;*void spritePoolInit(spritePool *sp, ushort baseSprite, ushort size, bool clearSprites);
-
-;*void spritePoolInit(spritePool *sp, WORD baseSprite, WORD poolSize) {
-;*	sp->poolStart=baseSprite;
-;*	sp->poolEnd=baseSprite+poolSize-1;
-;*	sp->poolSize=poolSize;
-;*	sp->way=WAY_UP;
-;*	sp->currentUp=sp->poolStart;
-;*	sp->currentDown=sp->poolEnd;
-;*	clearSprites(baseSprite,poolSize);
-;*}
+;* void spritePoolInit(spritePool *sp, ushort baseSprite, ushort size, bool clearSprites)
 
 .globl spritePoolInit
 spritePoolInit:
@@ -65,17 +55,7 @@ spritePoolInit:
 ;*				spritePoolClose
 ;*******************************************************************************/
 
-;*spritePoolClose_(spritePool *sp) {
-;*	if(sp->way==WAY_UP) {
-;*		clearSprites(sp->currentUp, sp->poolEnd-sp->currentUp+1);
-;*		sp->way=WAY_DOWN;
-;*		sp->currentDown=sp->poolEnd;
-;*	} else {
-;*		clearSprites(sp->poolStart, sp->currentDown-sp->poolStart+1);
-;*		sp->way=WAY_UP;
-;*		sp->currentUp=sp->poolStart;
-;*	}
-;*}
+;* spritePoolClose_(spritePool *sp)
 
 .globl spritePoolClose
 spritePoolClose:

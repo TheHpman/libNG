@@ -35,6 +35,9 @@ Build the library. From your SGDK folder use:
 
 You can now build projects targetting the NEO•GEO, simply use the `makefile.neo` script from your project folder instead of the usual `makefile.gen` one. If you are using an IDE integration, simply change the make script.
 
+> [!NOTE]
+> Having a bios and being an arcade system, NEO•GEO program flow is a bit different from other systems. It is recommended to use provided template project as a starting block.
+
 
 ## FAQ
 * How do I use Memory card / NEO•GEO feature xxx ?<br>
