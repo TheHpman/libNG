@@ -1,0 +1,7 @@
+{
+	"files.associations": {
+		"*.embeddedhtml": "html",
+		"neogeo.h": "c",
+		"libng.h": "c"
+	}
+}

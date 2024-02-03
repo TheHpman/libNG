@@ -1,0 +1,58 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<data>
+  <boxGroups>
+    <group name="GroupTest" color="ff80ff80" />
+    <group name="GroupTest2" color="ffff0000" />
+  </boxGroups>
+  <animations>
+    <animation name="IDLE" repeats="0" link="IDLE">
+      <step frame="bmary_spr_0000" x="-25" y="-108" t="6">
+        <box group="0" x="-1" y="-78" w="20" h="49" />
+        <box group="1" x="-4" y="-95" w="14" h="16" />
+      </step>
+      <step frame="bmary_spr_0001" x="-25" y="-108" t="6" />
+      <step frame="bmary_spr_0002" x="-25" y="-108" t="6" />
+      <step frame="bmary_spr_0003" x="-25" y="-108" t="6" />
+      <step frame="bmary_spr_0004" x="-25" y="-108" t="6" />
+      <step frame="bmary_spr_0005" x="-25" y="-108" t="6" />
+      <step frame="bmary_spr_0006" x="-25" y="-108" t="6" />
+      <step frame="bmary_spr_0007" x="-25" y="-108" t="6" />
+      <step frame="bmary_spr_0008" x="-25" y="-108" t="6" />
+      <step frame="bmary_spr_0009" x="-25" y="-108" t="6" />
+      <step frame="bmary_spr_000a" x="-25" y="-108" t="6" />
+      <step frame="bmary_spr_000b" x="-25" y="-108" t="6" />
+    </animation>
+    <animation name="WALK" repeats="0" link="WALK">
+      <step frame="bmary_spr_000c" x="-32" y="-111" t="5" />
+      <step frame="bmary_spr_000d" x="-32" y="-111" t="5" />
+      <step frame="bmary_spr_000e" x="-32" y="-111" t="5" />
+      <step frame="bmary_spr_000f" x="-32" y="-111" t="5" />
+      <step frame="bmary_spr_0010" x="-32" y="-111" t="5" />
+      <step frame="bmary_spr_0011" x="-32" y="-111" t="5" />
+      <step frame="bmary_spr_0012" x="-32" y="-111" t="5" />
+      <step frame="bmary_spr_0013" x="-32" y="-111" t="5" />
+    </animation>
+    <animation name="TEST" repeats="2" link="TEST2">
+      <step frame="bmary_spr_0000" x="0" y="0" t="60" />
+      <step frame="bmary_spr_0001" x="0" y="0" t="60" />
+      <step frame="bmary_spr_0002" x="0" y="0" t="60" />
+    </animation>
+    <animation name="TEST2" repeats="3" link="TEST">
+      <step frame="bmary_spr_0011" x="-8" y="-8" t="20" />
+      <step frame="bmary_spr_0012" x="-8" y="-8" t="20" />
+      <step frame="bmary_spr_0013" x="-8" y="-8" t="20" />
+    </animation>
+    <animation name="PUNCH" repeats="0" link="IDLE">
+      <step frame="bmary_spr_0014" x="-37" y="-108" t="4" />
+      <step frame="bmary_spr_0015" x="-33" y="-108" t="4" />
+      <step frame="bmary_spr_0016" x="-28" y="-105" t="4" />
+      <step frame="bmary_spr_0017" x="-27" y="-106" t="4" />
+      <step frame="bmary_spr_0015" x="-33" y="-108" t="4" />
+      <step frame="bmary_spr_0014" x="-37" y="-108" t="4" />
+    </animation>
+    <animation name="NEWFMT" repeats="0" link="NEWFMT">
+      <step frame="bmary_spr_0018" x="-31" y="-109" t="5" />
+      <step frame="bmary_spr_000f" x="-31" y="-109" t="5" />
+    </animation>
+  </animations>
+</data>

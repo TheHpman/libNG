@@ -1,0 +1,14 @@
+{
+    "configurations": [
+        {
+            "name": "Win32",
+            "includePath": ["${GDK}/inc", "${GDK}/res"],
+            "browse" : {
+                "limitSymbolsToIncludedHeaders" : true,
+                "databaseFilename" : ""
+            },
+	    "defines": ["VSCODE", "1"]
+        }
+    ],
+    "version": 4
+}

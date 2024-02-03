@@ -1,0 +1,134 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<chardata>
+  <setup>
+    <starting_tile>256</starting_tile>
+    <charfile>out\char.bin</charfile>
+    <mapfile>src\data\charMaps.s</mapfile>
+    <palfile>src\data\charPals.s</palfile>
+    <incfile>src\data\charInclude.h</incfile>
+    <incprefix>../</incprefix>
+  </setup>
+  <scrl id="streamScroll" colorStream="horizontal" section=".bank01">
+    <file>gfx\streamTest.png</file>
+  </scrl>
+  <scrl id="SNKLogoStrip" colorStream="vertical"  section=".bank01">
+    <file>gfx\SNK_logoStrip.png</file>
+  </scrl>
+  <scrl id="ffbg_a" section=".bank01">
+    <file>gfx\ffbg_a.png</file>
+  </scrl>
+  <scrl id="ffbg_b"  section=".bank00">
+    <file>gfx\ffbg_b0.png</file>
+    <auto1>gfx\ffbg_b1.png</auto1>
+    <auto2>gfx\ffbg_b2.png</auto2>
+    <auto3>gfx\ffbg_b3.png</auto3>
+  </scrl>
+  <pict id="ffbg_c">
+    <file>gfx\ffbg_c.png</file>
+  </pict>
+  <pict id="terrypict">
+    <file>gfx\terry_portrait.png</file>
+    <flips>xyz</flips>
+  </pict>
+  <pict id="desert">
+    <file>gfx\desert.png</file>
+  </pict>
+  <sprt id="bmary_spr" flips="xyz">
+    <file>gfx\bmary.png</file>
+    <frame outline="0,0:64,112">
+      <hwspr>0,0:64,112</hwspr>
+    </frame>
+    <frame outline="64,0:64,112">
+      <hwspr>64,0:64,112</hwspr>
+    </frame>
+    <frame outline="128,0:64,112">
+      <hwspr>128,0:64,112</hwspr>
+    </frame>
+    <frame outline="192,0:64,112">
+      <hwspr>192,0:64,112</hwspr>
+    </frame>
+    <frame outline="256,0:64,112">
+      <hwspr>256,0:64,112</hwspr>
+    </frame>
+    <frame outline="320,0:64,112">
+      <hwspr>320,0:64,112</hwspr>
+    </frame>
+    <frame outline="384,0:64,112">
+      <hwspr>384,0:64,112</hwspr>
+    </frame>
+    <frame outline="448,0:64,112">
+      <hwspr>448,0:64,112</hwspr>
+    </frame>
+    <frame outline="512,0:64,112">
+      <hwspr>512,0:64,112</hwspr>
+    </frame>
+    <frame outline="576,0:64,112">
+      <hwspr>576,0:64,112</hwspr>
+    </frame>
+    <frame outline="640,0:64,112">
+      <hwspr>640,0:64,112</hwspr>
+    </frame>
+    <frame outline="704,0:64,112">
+      <hwspr>704,0:64,112</hwspr>
+    </frame>
+    <frame outline="0,112:64,112">
+      <hwspr>0,112:64,112</hwspr>
+    </frame>
+    <frame outline="64,112:64,112">
+      <hwspr>64,112:64,112</hwspr>
+    </frame>
+    <frame outline="128,112:64,112">
+      <hwspr>128,112:64,112</hwspr>
+    </frame>
+    <frame outline="192,112:64,112">
+      <hwspr>192,112:64,112</hwspr>
+    </frame>
+    <frame outline="256,112:64,112">
+      <hwspr>256,112:64,112</hwspr>
+    </frame>
+    <frame outline="320,112:64,112">
+      <hwspr>320,112:64,112</hwspr>
+    </frame>
+    <frame outline="384,112:64,112">
+      <hwspr>384,112:64,112</hwspr>
+    </frame>
+    <frame outline="448,112:64,112">
+      <hwspr>448,112:64,112</hwspr>
+    </frame>
+    <frame outline="0,224:64,112">
+      <hwspr>0,224:64,112</hwspr>
+    </frame>
+    <frame outline="64,224:64,112">
+      <hwspr>64,224:64,112</hwspr>
+    </frame>
+    <frame outline="128,224:80,112">
+      <hwspr>128,224:80,112</hwspr>
+    </frame>
+    <frame outline="208,224:80,112">
+      <hwspr>208,224:80,112</hwspr>
+    </frame>
+    <frame outline="129,112:64,112">
+      <hwspr>145,112:32,112</hwspr>
+      <hwspr>129,138:16,16</hwspr>
+      <hwspr>177,153:16,16</hwspr>
+    </frame>
+  </sprt>
+  <pict id="topleft" flips="xyz">
+    <file>gfx\topleft.png</file>
+  </pict>
+  <pict id="pointer">
+    <file>gfx\pointer.png</file>
+  </pict>
+  <pict id="dbgTags">
+    <file>gfx\debugtags.png</file>
+  </pict>
+  <scrl id="wohd">
+    <file>gfx\wohd.png</file>
+  </scrl>
+  <pict id="gradient">
+    <file>gfx\colorbars.png</file>
+  </pict>
+  <pict id="tf4layers">
+    <file>gfx\tf4layers.png</file>
+  </pict>
+</chardata>
