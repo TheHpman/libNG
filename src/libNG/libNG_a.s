@@ -217,7 +217,7 @@ clearFixLayer:
 		lea	REG_VRAM_RW, a0
 		move.w	#0x0001, 2(a0)					;* +1 increments
 		move.w	#0x7000, -2(a0)					;* fix start
-		moveq	#-1, d1
+		move.w	#FIX_CLEAR_CHARACTER, d1
 		move.w	#0x4f, d0					;* 4f  80*16 = 1280 chars
 
 0:		move.w	d1, (a0)					;*				8
@@ -231,7 +231,7 @@ clearFixLayer:
 ;* IRQ safe version
 clearFixLayer2:
 		lea	REG_VRAM_ADDR, a0				;*				12
-		move.l	#0x700000ff, d1					;* vram addr & data		12
+		move.l	#0x70000000+FIX_CLEAR_CHARACTER, d1		;* vram addr & data		12
 		lea	0x10000, a1					;* vram increment		12
 		moveq	#0x4f, d0					;* 80*16 = 1280 chars		8
 
@@ -264,7 +264,7 @@ clearFixLayer3:
 .globl	_fixBlankLine
 _fixBlankLine:
 	.rept	40
-		.word	0x00ff
+		.word	FIX_CLEAR_CHARACTER
 	.endr
 		.word	0x0000
 
