@@ -729,8 +729,6 @@ void fixPrint3(u32 printInfo, const u16 *buf);
 */
 void fixPrint4(u32 printInfo, const u16 *buf);
 
-//void fixPrintf(u16 x, u16 y, u16 pal, u16 bank, char *fmt, ...);
-
 /**
 *  \brief
 *      Format a 8bit string

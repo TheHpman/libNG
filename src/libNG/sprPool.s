@@ -713,7 +713,7 @@ drawUnscaledPattern:
 		bcc.s	0f
 		swap	d2
 
-		;*d1=shiftX, d1=shiftX, now scale shifts
+		;*d1=shiftX, d2=shiftY, now scale shifts
 0:		;* compute final posX
 		add.w	AS_POSX(a3), d1					;* d1= final posX
 
@@ -1756,4 +1756,3 @@ _bufferNewFrame:
 		dbra	d5, 5b						;* iterate strip
 		;* wrote all HW sprites
 		jmp	(a4)
-

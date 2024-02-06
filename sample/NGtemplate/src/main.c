@@ -33,7 +33,10 @@ typedef struct __attribute__((packed, aligned(2))) bkp_ram_info
 	};
 	// first 2 bytes are always reserved for debug dips
 
-	u8 stuff[254];
+	// check each frame, send code if > 0 and decrement
+	u8 coinSound;
+
+	u8 stuff[253];
 	// 256 bytes total default size, adjust linker file if changing
 } bkp_ram_info;
 
@@ -173,6 +176,9 @@ void initBackupRAM()
 	// clear debug dips
 	bkp_data.debugDips = 0;
 
+	// cleat coin sound counter
+	bkp_data.coinSound = 0;
+
 	// set default hi-score data etc.
 	// ...
 }
@@ -187,7 +193,7 @@ void titleDisplay()
 	// title + compulsion timer display
 
 	palJobPut(0, 8, fixPalettes);
-	backgroundColor=NGCOLOR_LIGHTRED;
+	backgroundColor = NGCOLOR_LIGHTRED;
 
 	while (1)
 	{
@@ -208,7 +214,7 @@ void attractDemo()
 	u16 timer = 15 * 60;
 
 	palJobPut(0, 8, fixPalettes);
-	backgroundColor=NGCOLOR_LIGHTBLUE;
+	backgroundColor = NGCOLOR_LIGHTBLUE;
 
 	while (timer--)
 	{
@@ -224,7 +230,7 @@ void game()
 {
 	u16 timer1, timer2;
 	clearFixLayer();
-	backgroundColor=NGCOLOR_LIGHTGREEN;
+	backgroundColor = NGCOLOR_LIGHTGREEN;
 
 	while (1)
 	{
@@ -306,6 +312,9 @@ void game()
 void USER()
 {
 	// this sub MUST return to give back control to BIOS
+
+	if(!BIOS.DEVMODE)
+		bkp_data.debugDips = 0;
 	initGfx();
 	clearFixLayer();
 	// using callback as demonstration purpose only,
@@ -399,4 +408,8 @@ void COIN_SOUND()
 	// coin sound event
 	// send appropriate sound code to Z80
 	// no need to check demo sound etc flags, coin sound should NEVER be muted
+
+	// using backup ram instead of sending code directly fixes issue with coin sound
+	// being lost when bios switches to tile screen
+	bkp_data.coinSound++;
 }

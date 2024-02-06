@@ -40,15 +40,15 @@
 
 /**
  *  \brief
- *      Character used to clear fix layer (12bits)
- */
-#define FIX_CLEAR_CHARACTER 0x0ff
-
-/**
- *  \brief
  *      Fix jobs command buffer size
  */
 #define FIX_BUFFER_SIZE	128
+^
+/**
+ *  \brief
+ *      Character used to clear fix layer (12bits)
+ */
+#define FIX_CLEAR_CHARACTER 0x0ff
 
 /**
  *  \brief
