@@ -473,9 +473,9 @@ typedef struct __attribute__((packed,aligned(2))) aSprite {
 	animStep	*steps;			/**< Pointer to steps data for current animation */
 	animStep	*currentStep;		/**< Pointer to current step data */
 	sprFrame	*currentFrame;		/**< Pointer to current frame data */
-	u32		counter;		/**< Frame counter for current step */
+	u16		counter;		/**< Frame counter for current step */
 	u16		repeats;		/**< # of played repeats */
-	u16		tileWidth;		/**< (legacy, to be removed) */
+	u16		tileWidth;		/**< (internal, for fixed allocation) */
 	u16		currentFlip;		/**< Current orientation of sprite */
 	union
 	{

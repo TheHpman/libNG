@@ -11,30 +11,40 @@
 .globl aSpriteInit
 aSpriteInit:
 	.set	_ARGS, 8
+	.set	_aSprite, _ARGS
+	.set	_sprInfo, _ARGS+4
+	.set	_baseSpr, _ARGS+8+2	;* word
+	.set	_basePal, _ARGS+12+3	;* byte
+	.set	_posX, _ARGS+16+2	;* word
+	.set	_posY, _ARGS+20+2	;* word
+	.set	_anim, _ARGS+24+2	;* word
+	.set	_flip, _ARGS+28+2	;* word
+	.set	_flags, _ARGS+32+2	;* word
 		move.l	d2, -(sp)					;* push				12
 
-		move.l	_ARGS(sp), a0					;* a0=as			16
+		move.l	_aSprite(sp), a0				;* a0=as			16
 	#if	BANKING_ENABLE
-		move.b	_ARGS+4(sp), d0
+		move.b	_sprInfo(sp), d0
 		move.b	d0, REG_BANKING					;* bankswitch
 		move.b	d0, AS_BANK(a0)
 	#endif
-		move.l	_ARGS+4(sp), a1					;* a1=si			16
+		move.l	_sprInfo(sp), a1				;* a1=si			16
+		move.w	#1, AS_COUNTER(a0)
 		moveq	#0, d0						;* 				4
-		move.l	d0, AS_COUNTER(a0)				;* as->counter=0		16
+	;*	move.l	d0, AS_COUNTER(a0)				;* as->counter=0		16
 		move.l	d0, AS_CURRENTFRAME(a0)				;* as->currentFrame=0		16		//prevents same frame skipping glitch
 		move.w	d0, AS_REPEATS(a0)				;* as->repeats=0		12
 		moveq	#-1, d0
 		move.w	d0, AS_CURRENTSTEPNUM(a0)			;* as->currentStepNum=-1 	16
 		move.w	d0, AS_XBIG(a0)					;* Xbig/Ybig=0xff		16
-		move.b	_ARGS+12+3(sp), AS_BASEPALETTE(a0)		;* as->basePalette=palette 	20
-		move.w	_ARGS+16+2(sp), AS_POSX(a0)			;* as->posX=posX		20
-		move.w	_ARGS+20+2(sp), AS_POSY(a0)			;* as->posY=posY		20
-		move.w	_ARGS+28+2(sp), AS_CURRENTFLIP(a0)		;* as->currentFlip=flip		20
-		move.w	_ARGS+32+2(sp), AS_FLAGS(a0)			;* as->flags=flags		20
+		move.b	_basePal(sp), AS_BASEPALETTE(a0)		;* as->basePalette=palette 	20
+		move.w	_posX(sp), AS_POSX(a0)				;* as->posX=posX		20
+		move.w	_posY(sp), AS_POSY(a0)				;* as->posY=posY		20
+		move.w	_flip(sp), AS_CURRENTFLIP(a0)			;* as->currentFlip=flip		20
+		move.w	_flags(sp), AS_FLAGS(a0)			;* as->flags=flags		20
 		move.l	SI_ANIMS(a1), AS_ANIMS(a0)			;* as->anims=si->anims		28
 
-		move.w	_ARGS+24+2(sp), d1				;* d0=anim			12
+		move.w	_anim(sp), d1					;* d0=anim			12
 		move.w	d1, AS_ANIMID(a0)				;* as->animID=anim		12
 		move.w	d1, AS_CURRENTANIMID(a0)			;* currentAnimID=anim		12
 		add.w	d1, d1						;* animation=4b each		4
@@ -52,7 +62,7 @@ aSpriteInit:
 		move.l	STEP_FRAME(a1), a1				;* a1=frame			16
 		move.w	FRAME_TILEWIDTH(a1), d0				;* d0=as->steps->frame->tileWidth	12
 		move.w	d0, AS_TILEWIDTH(a0)				;* as->tileWidth=d0		12
-		move.w	_ARGS+8+2(sp), d1				;* d1=sprite			12
+		move.w	_baseSpr(sp), d1				;* d1=sprite			12
 		bmi.s	9f						;* no init / pool mode flag
 
 		;* regular init
@@ -111,26 +121,30 @@ aSpriteInit:
 ;* ******************************************************************************/
 
 	.set _ARGS, 4
+	.set _aSprite, _ARGS
+	.set _anim, _ARGS+4+2	;* word
 
 .globl aSpriteSetAnim2
 aSpriteSetAnim2:
-		move.l	_ARGS(sp), a0					;* a0=as			16
-		move.w	_ARGS+4+2(sp), d0				;* d0=anim			12
+		move.l	_aSprite(sp), a0				;* a0=as			16
+		move.w	_anim(sp), d0					;* d0=anim			12
 		bra.s	0f
 
 .globl aSpriteSetAnim
 aSpriteSetAnim:
-		move.l	_ARGS(sp), a0					;* a0=as			16
-		move.w	_ARGS+4+2(sp), d0				;* d0=anim			12
+		move.l	_aSprite(sp), a0				;* a0=as			16
+		move.w	_anim(sp), d0					;* d0=anim			12
 		cmp.w	AS_ANIMID(a0), d0				;* same ID? return		12
 		beq.s	9f						;*				8 not taken, 10 taken
 	
 0:		move.w	d0, AS_ANIMID(a0)				;* update ID			12
 		move.w	d0, AS_CURRENTANIMID(a0)			;* update current ID		12
 		move.w	#-1, AS_CURRENTSTEPNUM(a0)			;* as->currentStepNum=-1	 16
-		moveq	#0, d1						;*				4
-		move.l	d1, AS_COUNTER(a0)				;* as->counter=0		16
-		move.w	d1, AS_REPEATS(a0)				;* as-> repeats=0		12
+	;*	moveq	#0, d1						;*				4
+	;*	move.l	d1, AS_COUNTER(a0)				;* as->counter=0		16
+	;*	move.w	d1, AS_REPEATS(a0)				;* as-> repeats=0		12
+		move.w	#1, AS_COUNTER(a0)				;* as->counter=1		16
+		move.w	#0, AS_REPEATS(a0)				;* as-> repeats=0		16
 
 		add.w	d0, d0						;* animation			4
 		add.w	d0, d0						;* =4B each			4
@@ -146,21 +160,30 @@ aSpriteSetAnim:
 		move.l	a1, AS_CURRENTSTEP(a0)				;* as->currentStep		16
 9:		rts
 
-;* aSpriteSetAnimStep(aSprite *as, ushort anim, ushort step)
+
+;* /******************************************************************************
+;* 				aSpriteSetAnimStep
+;* ******************************************************************************/
+
+	.set _ARGS, 4
+	.set _aSprite, _ARGS
+	.set _anim, _ARGS+4+2	;* word
+	.set _step, _ARGS+8+2	;* word
+
 .globl aSpriteSetAnimStep2
 aSpriteSetAnimStep2:
-		move.w	_ARGS+8+2(sp), d1				;* d1=step			12
+		move.w	_step(sp), d1					;* d1=step			12
 		beq.s	aSpriteSetAnim2					;* just load anim if step is 0
-		move.l	_ARGS(sp), a0					;* a0=as			16
-		move.w	_ARGS+4+2(sp), d0				;* d0=anim
+		move.l	_aSprite(sp), a0				;* a0=as			16
+		move.w	_anim(sp), d0					;* d0=anim
 		bra.s	0f
 
 .globl aSpriteSetAnimStep
 aSpriteSetAnimStep:
-		move.w	_ARGS+8+2(sp), d1				;* d1=step			12
+		move.w	_step(sp), d1					;* d1=step			12
 		beq.w	aSpriteSetAnim					;* just load anim if step is 0
-		move.l	_ARGS(sp), a0					;* a0=as			16
-		move.w	_ARGS+4+2(sp), d0				;* d0=anim
+		move.l	_aSprite(sp), a0				;* a0=as			16
+		move.w	_anim(sp), d0					;* d0=anim
 		cmp.w	AS_ANIMID(a0), d0				;* same ID ?
 		beq.s	4f
 		;*set anim & step
@@ -186,22 +209,33 @@ aSpriteSetAnimStep:
 		_COMPUTE_STEP_	d1, a1					;* a1+= stepsize * step#
 		move.l	a1, AS_CURRENTSTEP(a0)				;* as->currentStep		16
 	
-		moveq	#0, d1						;*				4
-		move.l	d1, AS_COUNTER(a0)				;* as->counter=0		16
-		move.w	d1, AS_REPEATS(a0)				;* as-> repeats=0		12
+	;*	moveq	#0, d1						;*				4
+	;*	move.l	d1, AS_COUNTER(a0)				;* as->counter=0		16
+	;*	move.w	d1, AS_REPEATS(a0)				;* as-> repeats=0		12
+		move.w	#1, AS_COUNTER(a0)				;* as->counter=1		16
+		clr.w	AS_REPEATS(a0)					;* as-> repeats=0		16
 
 		rts
 
+
+;* /******************************************************************************
+;* 				aSpriteSetStep
+;* ******************************************************************************/
+
+	.set _ARGS, 4
+	.set _aSprite, _ARGS
+	.set _step, _ARGS+4+2	;* word
+
 .globl aSpriteSetStep2
 aSpriteSetStep2:
-		move.l	_ARGS(sp), a0					;* a0=as			16
-		move.w	_ARGS+4+2(sp), d1				;* d1=step			12
+		move.l	_aSprite(sp), a0				;* a0=as			16
+		move.w	_step(sp), d1					;* d1=step			12
 		bra.s	5f
 
 .globl aSpriteSetStep
 aSpriteSetStep:
-		move.l	_ARGS(sp), a0					;* a0=as			16
-		move.w	_ARGS+4+2(sp), d1				;* d1=step			12
+		move.l	_aSprite(sp), a0				;* a0=as			16
+		move.w	_step(sp), d1					;* d1=step			12
 4:		cmp.w	AS_CURRENTSTEPNUM(a0), d1			;* same step? return		12
 		beq.s	9f
 
@@ -213,9 +247,12 @@ aSpriteSetStep:
 		sub.w	#STEP_BYTESIZE, a1				;*				12
 		move.l	a1, AS_CURRENTSTEP(a0)				;* as->currentStep		16
 	
-		moveq	#0, d1						;*				4
-		move.l	d1, AS_COUNTER(a0)				;* as->counter=0		16
-;*		move.w	d1, AS_REPEATS(a0)				;* as-> repeats=0		12
+	;*	moveq	#0, d1						;*				4
+	;*	move.l	d1, AS_COUNTER(a0)				;* as->counter=0		16
+;*	;*	move.w	d1, AS_REPEATS(a0)				;* as-> repeats=0		12
+		move.w	#1, AS_COUNTER(a0)				;* as->counter=1		16
+;*		clr.w	AS_REPEATS(a0)					;* as-> repeats=0		16
+
 9:		rts
 
 
@@ -350,11 +387,10 @@ aSpriteAnimateList:
 		move.b	AS_BANK(a0), REG_BANKING			;* bankswitch			24
 	#endif
 
-		;* animation sub macro
-		;* rd0: data register, holds libNG_frameCounter
-		;* rd1, ra1: scratch data/addr registers
+		;* animation macro
+		;* rd0, rd1, ra1: scratch data/addr registers
 		;* ra0:	addr register, holds AS ptr
-		___AS_ANIMATION_SUBBLOCK___ d0 d1 a0 a1			;* subblock to avoid reloading framecounter
+		___AS_ANIMATION_BLOCK___ d0 d1 a0 a1
 
 		move.l	(a2)+, d1
 		bne.w	0b
@@ -560,9 +596,13 @@ aSpriteAnimate:
 		move.b	AS_BANK(a0), REG_BANKING			;* bankswitch			24
 	#endif
 
-		move.l	libNG_frameCounter, d0				;*				20
-		cmp.l	AS_COUNTER(a0), d0				;*				18
-		blo.s	700f						;*(unsigned compare)		8 not taken, 10 taken
+	;*	move.l	libNG_frameCounter, d0				;*				20
+	;*	cmp.l	AS_COUNTER(a0), d0				;*				18
+	;*	blo.s	700f						;*(unsigned compare)		8 not taken, 10 taken
+		tst.b	AS_FLAGS(a0)					;* test anim stop flag		12
+		bmi.s	700f						;*				8/10
+		subq.w	#1, AS_COUNTER(a0)				;*				16
+		bne.s	700f	;* anim_done	
 
 		;*must move to next step/repeat/link
 		move.l	AS_CURRENTSTEP(a0), a1				;*				16
@@ -599,8 +639,9 @@ aSpriteAnimate:
 		bra.s	600f	;* anim_common_block	
 
 400:		;* anim_ended:
-		moveq	#-1, d1						;*				4
-		move.l	d1, AS_COUNTER(a0)				;*display forever		16
+	;*	moveq	#-1, d1						;*				4
+	;*	move.l	d1, AS_COUNTER(a0)				;*display forever		16
+		bset.b	#B_AS_ANIMSTOP, AS_FLAGS(a0)			;*				20
 		bra.s	700f	;* anim_done	
 
 200:		;* anim_do_next_step:
@@ -630,10 +671,11 @@ aSpriteAnimate_same_step2:					;* step didn't change, check if moved or flipped
 
 ;*animating section
 aSpriteAnimate_common_block2:					;*a0=as a1=as->currentanim d0=libNG_frameCounter
-		moveq	#0, d1						;* //
-		move.w	STEP_DURATION(a1), d1				;*				12
-		add.l	d1, d0						;*				8
-		move.l	d0, AS_COUNTER(a0)				;*update counter		16
+	;*	moveq	#0, d1						;* //
+	;*	move.w	STEP_DURATION(a1), d1				;*				12
+	;*	add.l	d1, d0						;*				8
+	;*	move.l	d0, AS_COUNTER(a0)				;*update counter		16
+		move.w	STEP_DURATION(a1), AS_COUNTER(a0)		;*				20
 
 		move.l	AS_CURRENTFRAME(a0), d0				;*d0=old frame			16
 		move.l	STEP_FRAME(a1), AS_CURRENTFRAME(a0)		;*update frame ptr		28

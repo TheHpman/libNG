@@ -157,12 +157,12 @@ AS_STEPS		= 18
 AS_CURRENTSTEP		= 22
 AS_CURRENTFRAME		= 26
 AS_COUNTER		= 30
-AS_REPEATS		= 34
-AS_TILEWIDTH		= 36		;* should be able to cut this
-AS_CURRENTFLIP		= 38
-AS_FLAGS		= 40
-AS_XBIG			= 42
-AS_YBIG			= 43
+AS_REPEATS		= 32
+AS_TILEWIDTH		= 34		;* for fixed allocation
+AS_CURRENTFLIP		= 36
+AS_FLAGS		= 38
+AS_XBIG			= 40
+AS_YBIG			= 41
 
 
 ;*	//flags & masks
@@ -192,10 +192,15 @@ AS_MASK_MOVED_FLIPPED	= 0xfc
 AS_MASK_STRICTCOORDS	= 0xbf
 AS_MASK_NODISPLAY	= 0x7f
 
+;* flags byte 0
+B_AS_ANIMSTOP		= 0x07
+
+;* flags byte1
 B_AS_MOVED		= 0x00
 B_AS_FLIPPED		= 0x01
 B_AS_STRICTCOORDS	= 0x06
 B_AS_NODISPLAY		= 0x07
+
 
 
 ;****************** sprite pools ******************
@@ -268,17 +273,12 @@ CS_BWJOB		= 12
 ;* rd0, rd1, ra1: scratch data/addr registers
 ;* ra0:	addr register, holds AS ptr
 	.macro	___AS_ANIMATION_BLOCK___ rd0 rd1 ra0 ra1
-		move.l	libNG_frameCounter, \rd0				;*				20
-		___AS_ANIMATION_SUBBLOCK___ \rd0 \rd1 \ra0 \ra1
-	.endm
-
-;* animation sub macro
-;* rd0: data register, holds libNG_frameCounter
-;* rd1, ra1: scratch data/addr registers
-;* ra0:	addr register, holds AS ptr
-	.macro	___AS_ANIMATION_SUBBLOCK___ rd0 rd1 ra0 ra1
-		cmp.l	AS_COUNTER(\ra0), \rd0					;*				18
-		blo.s	700f	;* anim_done					;*(unsigned compare)		8 not taken, 10 taken
+	;*	cmp.l	AS_COUNTER(\ra0), \rd0					;*				18
+	;*	blo.s	700f	;* anim_done					;*(unsigned compare)		8 not taken, 10 taken
+		tst.b	AS_FLAGS(\ra0)						;* test anim stop flag		12
+		bmi.s	700f							;*				8/10
+		subq.w	#1, AS_COUNTER(\ra0)					;*				16
+		bne.s	700f	;* anim_done					;*(unsigned compare)		8 not taken, 10 taken
 
 		;*must move to next step/repeat/link
 		move.l	AS_CURRENTSTEP(\ra0), \ra1				;*				16
@@ -315,8 +315,9 @@ CS_BWJOB		= 12
 		bra.s	600f	;* anim_common_block				;*				10
 
 400:		;* anim_ended:
-		moveq	#-1, \rd1						;*				4
-		move.l	\rd1, AS_COUNTER(\ra0)					;*display forever		16
+;*		moveq	#-1, \rd1						;*				4
+;*		move.l	\rd1, AS_COUNTER(\ra0)					;*display forever		16
+		bset.b	#B_AS_ANIMSTOP, AS_FLAGS(\ra0)				;*				20
 		bra.s	700f	;* anim_done					;*step didn't change
 
 200:		;* anim_do_next_step:
@@ -326,11 +327,13 @@ CS_BWJOB		= 12
 
 		;*animating section
 600:		;* anim_common_block:						;*a0=as a1=as->currentanim d0=libNG_frameCounter
-		moveq	#0, \rd1						;* prep for long add		4
-		move.w	STEP_DURATION(\ra1), \rd1				;*				12
-		add.l	\rd0, \rd1						;*				8
-		move.l	\rd1, AS_COUNTER(\ra0)					;*update counter		16
-		;* STEP_FRAME is 0
+	;*	moveq	#0, \rd1						;* prep for long add		4
+	;*	move.w	STEP_DURATION(\ra1), \rd1				;*				12
+	;*	add.l	\rd0, \rd1						;*				8
+	;*	move.l	\rd1, AS_COUNTER(\ra0)					;*update counter		16
+		move.w	STEP_DURATION(\ra1), AS_COUNTER(\ra0)			;*				20
+
+		;* STEP_FRAME is 0, hence (\ra1)
 		move.l	(\ra1), AS_CURRENTFRAME(\ra0)				;*update frame ptr
 ;*		move.w	FRAME_TILEWIDTH(\ra1), AS_TILEWIDTH(\ra0)		;*update tilewidth
 

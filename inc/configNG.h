@@ -43,7 +43,7 @@
  *      Fix jobs command buffer size
  */
 #define FIX_BUFFER_SIZE	128
-^
+
 /**
  *  \brief
  *      Character used to clear fix layer (12bits)
