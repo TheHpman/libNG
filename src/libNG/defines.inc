@@ -1,8 +1,3 @@
-;* comment out to disable banking
-;* DO_BANKING		= 1
-;* define banking register (byte write)
-;* REG_BANKING		= 0x2ffff1
-
 BIOS_SYSTEM_MODE	= 0x10fd80
 BIOS_MESS_POINT		= 0x10fdbe
 BIOS_MESS_BUSY		= 0x10fdc2

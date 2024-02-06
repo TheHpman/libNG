@@ -148,9 +148,9 @@ spritePoolDrawList_2_upNext:
 		move.l	d0, a3						;* a3=AS/Pict			4
 
 		;*render up
-	.ifdef	DO_BANKING
+	#if	BANKING_ENABLE
 		move.b	AS_BANK(a3), REG_BANKING			;* bankswitch			24
-	.endif
+	#endif
 		___AS_ANIMATION_BLOCK___ d0 d1 a3 a0
 
 		;* render
@@ -194,9 +194,9 @@ spritePoolDrawList_2_downNext:
 		move.l	d0, a3						;* a3=AS/Pict			4
 
 		;*render down
-	.ifdef	DO_BANKING
+	#if	BANKING_ENABLE
 		move.b	AS_BANK(a3), REG_BANKING			;* bankswitch			24
-	.endif
+	#endif
 		___AS_ANIMATION_BLOCK___ d0 d1 a3 a0
 
 		;* render
@@ -262,9 +262,9 @@ spritePoolDrawList_1_upNext:
 		move.l	d0, a3						;* a3=AS/Pict			4
 
 		;*render up
-	.ifdef	DO_BANKING
+	#if	BANKING_ENABLE
 		move.b	AS_BANK(a3), REG_BANKING			;* bankswitch			24
-	.endif
+	#endif
 		___AS_ANIMATION_BLOCK___ d0 d1 a3 a0
 
 		;* render
@@ -318,9 +318,9 @@ spritePoolDrawList_1_upNext2:
 		move.l	d0, a3						;*a3=AS/Pict			4
 
 		;*render up, buffer only
-	.ifdef	DO_BANKING
+	#if	BANKING_ENABLE
 		move.b	AS_BANK(a3), REG_BANKING			;* bankswitch			24
-	.endif
+	#endif
 		___AS_ANIMATION_BLOCK___ d0 d1 a3 a0
 
 		;* render
@@ -371,9 +371,9 @@ spritePoolDrawList_1_downNext:
 		move.l	d0, a3						;*a3=AS/Pict			4
 
 		;*render down
-	.ifdef	DO_BANKING
+	#if	BANKING_ENABLE
 		move.b	AS_BANK(a3), REG_BANKING			;* bankswitch			24
-	.endif
+	#endif
 		___AS_ANIMATION_BLOCK___ d0 d1 a3 a0
 
 		;* render
@@ -426,9 +426,9 @@ spritePoolDrawList_1_downNext2:
 		move.l	d0, a3
 
 		;*render down, buffer only
-	.ifdef	DO_BANKING
+	#if	BANKING_ENABLE
 		move.b	AS_BANK(a3), REG_BANKING			;* bankswitch			24
-	.endif
+	#endif
 		___AS_ANIMATION_BLOCK___ d0 d1 a3 a0
 
 		;* render
@@ -767,10 +767,10 @@ drawUnscaledPattern:
 
 ;*******************************************************************************************
 drawUnscaledPatternBuffered:
-;*	.ifdef	DO_BANKING
+;*	#if	BANKING_ENABLE
 ;*		move.w	#BANKING_CMD, (a6)+
 ;*		move.w	AS_BANK-1(a3), (a6)+
-;*	.endif
+;*	#endif
 
 		move.w	#0x8400, d6
 		add.w	d7, d6
@@ -905,9 +905,9 @@ spritePoolDrawList3_upNext:
 
 ;*render up
 		;* === animate if requested ===
-	.ifdef	DO_BANKING
+	#if	BANKING_ENABLE
 		move.b	AS_BANK(a3), REG_BANKING			;* bankswitch
-	.endif
+	#endif
 		___AS_ANIMATION_BLOCK___ d0 d1 a3 a0
 
 		;* render
@@ -969,9 +969,9 @@ spritePoolDrawList3_upNext2:
 
 ;*render up, buffer only
 		;* === animate if requested ===
-	.ifdef	DO_BANKING
+	#if	BANKING_ENABLE
 		move.b	AS_BANK(a3), REG_BANKING			;* bankswitch			24
-	.endif
+	#endif
 		___AS_ANIMATION_BLOCK___ d0 d1 a3 a0
 
 		;* render
@@ -1031,9 +1031,9 @@ spritePoolDrawList3_downNext:
 
 ;*render down
 		;* === animate if requested ===
-	.ifdef	DO_BANKING
+	#if	BANKING_ENABLE
 		move.b	AS_BANK(a3), REG_BANKING			;* bankswitch			24
-	.endif
+	#endif
 		___AS_ANIMATION_BLOCK___ d0 d1 a3 a0
 
 		;* render
@@ -1094,9 +1094,9 @@ spritePoolDrawList3_downNext2:
 
 ;*render down, buffer only
 		;* === animate if requested ===
-	.ifdef	DO_BANKING
+	#if	BANKING_ENABLE
 		move.b	AS_BANK(a3), REG_BANKING			;* bankswitch			24
-	.endif
+	#endif
 		___AS_ANIMATION_BLOCK___ d0 d1 a3 a0
 
 		;* render
@@ -1323,10 +1323,10 @@ writeBaseScaled:
 
 ;*******************************************************************************************
 drawScaledPatternBuffered:
-;*	.ifdef	DO_BANKING
+;*	#if	BANKING_ENABLE
 ;*		move.w	#BANKING_CMD, (a6)+
 ;*		move.w	AS_BANK-1(a3), (a6)+
-;*	.endif
+;*	#endif
 
 		move.w	#0x8400, d6
 		add.w	d7, d6
@@ -1668,10 +1668,10 @@ _bfrNewFrmDn2:	move.w	FRAME2_SPRCOUNT(a2), d0
 
 
 _bufferNewFrame:
-;*	.ifdef	DO_BANKING
+;*	#if	BANKING_ENABLE
 ;*		move.w	#BANKING_CMD, (a6)+
 ;*		move.w	AS_BANK-1(a3), (a6)+
-;*	.endif
+;*	#endif
 	
 		;* get data for current flip
 		move.w	AS_CURRENTFLIP(a3), d1
