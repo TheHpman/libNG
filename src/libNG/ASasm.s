@@ -400,19 +400,19 @@ aSpriteAnimateList:
 
 
 ;* /******************************************************************************
-;* 				aSpriteGetNextFrame
+;* 				aSpriteGetNextStep
 ;* ******************************************************************************/
 
-;* void aSpriteGetNextFrame(aSprite *as) 
-.globl aSpriteGetNextFrame
-aSpriteGetNextFrame:
+;* void aSpriteGetNextStep(aSprite *as) 
+.globl aSpriteGetNextStep
+aSpriteGetNextStep:
 	.set	_ARGS, 4
 		move.l	_ARGS(sp), a0
 
 		tst.b	AS_FLAGS(a0)						;* test anim stop flag		12
-		bmi.s	_sameFrame							;*				8/10
+		bmi.s	_sameStep							;*				8/10
 		cmp.w	#1, AS_COUNTER(a0)
-		bne.s	_sameFrame
+		bne.s	_sameStep
 
 	#if	BANKING_ENABLE
 		move.b	AS_BANK(a0), REG_BANKING
@@ -426,11 +426,10 @@ aSpriteGetNextFrame:
 		bpl.s	_stepUp		;* anim_do_next_step
 		add.b	d1, d1
 		beq.s	_doRepeat	;* anim_do_repeat
-		bmi.s	_sameFrame	;* anim_ended
+		bmi.s	_sameStep	;* anim_ended
 
  		;* anim_do_link:
-		move.l	4(a1), a1	;* get step				;*				12
-		move.l	(a1), d0
+		move.l	4(a1), d0	;* get step				;*				12
 		rts
 
 _doRepeat:	;* anim_do_repeat:
@@ -439,14 +438,13 @@ _doRepeat:	;* anim_do_repeat:
 		cmp.w	(a1)+, d0						;*				12
 		bhs.s	100b	;* repeats done
 		;* repeating
-		move.l	AS_STEPS(a0), a1
-	;*	move.l	(a1), d0
-	;*	rts
-
-_stepUp:	move.l	(a1), d0
+		move.l	AS_STEPS(a0), d0
 		rts
 
-_sameFrame:	move.l	AS_CURRENTFRAME(a0), d0
+_stepUp:	move.l	a1, d0
+		rts
+
+_sameStep:	move.l	AS_CURRENTSTEP(a0), d0
 		rts
 
 

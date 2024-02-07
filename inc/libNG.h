@@ -1046,11 +1046,11 @@ void aSpriteAnimateList(void *list);
 
 /**
 *  \brief
-*      Get next frame to be displayed (does not tick animation)
+*      Get next step to be displayed (does not tick animation)
 *  \param list
 *      pointer to aSprite handle
 */
-sprFrame* aSpriteGetNextFrame(aSprite *as);
+sprFrame* aSpriteGetNextStep(aSprite *as);
 
 
 // ========== sprite pools ==========
