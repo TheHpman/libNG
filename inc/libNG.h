@@ -1044,6 +1044,14 @@ void aSpriteAnimateSingle(aSprite *as);
 */
 void aSpriteAnimateList(void *list);
 
+/**
+*  \brief
+*      Get next frame to be displayed (does not tick animation)
+*  \param list
+*      pointer to aSprite handle
+*/
+sprFrame* aSpriteGetNextFrame(aSprite *as);
+
 
 // ========== sprite pools ==========
 /**

@@ -399,6 +399,56 @@ aSpriteAnimateList:
 		rts
 
 
+;* /******************************************************************************
+;* 				aSpriteGetNextFrame
+;* ******************************************************************************/
+
+;* void aSpriteGetNextFrame(aSprite *as) 
+.globl aSpriteGetNextFrame
+aSpriteGetNextFrame:
+	.set	_ARGS, 4
+		move.l	_ARGS(sp), a0
+
+		tst.b	AS_FLAGS(a0)						;* test anim stop flag		12
+		bmi.s	_sameFrame							;*				8/10
+		cmp.w	#1, AS_COUNTER(a0)
+		bne.s	_sameFrame
+
+	#if	BANKING_ENABLE
+		move.b	AS_BANK(a0), REG_BANKING
+	#endif
+
+		;* must move to next step/repeat/link
+		move.l	AS_CURRENTSTEP(a0), a1				;*				16
+		lea	STEP_BYTESIZE(a1), a1
+
+100:		move.b	(a1), d1						;*				8
+		bpl.s	_stepUp		;* anim_do_next_step
+		add.b	d1, d1
+		beq.s	_doRepeat	;* anim_do_repeat
+		bmi.s	_sameFrame	;* anim_ended
+
+ 		;* anim_do_link:
+		move.l	4(a1), a1	;* get step				;*				12
+		move.l	(a1), d0
+		rts
+
+_doRepeat:	;* anim_do_repeat:
+		move.w	AS_REPEATS(a0), d0					;*d1=as->repeats		12
+		addq.w	#2, a1
+		cmp.w	(a1)+, d0						;*				12
+		bhs.s	100b	;* repeats done
+		;* repeating
+		move.l	AS_STEPS(a0), a1
+	;*	move.l	(a1), d0
+	;*	rts
+
+_stepUp:	move.l	(a1), d0
+		rts
+
+_sameFrame:	move.l	AS_CURRENTFRAME(a0), d0
+		rts
+
 
 ;* ##############################################################################
 ;*		Old style fixed allocation sprite subs, deprecated
