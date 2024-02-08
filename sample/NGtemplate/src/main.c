@@ -176,7 +176,7 @@ void initBackupRAM()
 	// clear debug dips
 	bkp_data.debugDips = 0;
 
-	// cleat coin sound counter
+	// clear coin sound counter
 	bkp_data.coinSound = 0;
 
 	// set default hi-score data etc.

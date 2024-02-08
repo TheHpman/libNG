@@ -1,12 +1,10 @@
 ;* 	NEO-GEO main 68k vectors table, system header & startup code
 
-
-;** NOTE: Cartridge systems have swapped IRQ1 and IRQ2
-
 REG_WATCHDOG		=	0x300001
+REG_VRAMRW		=	0x3c0002
 REG_IRQACK		=	0x3c000c
-BIOS_USER_REQUEST	=	0x10fdae
 SYSTEM_RETURN		=	0xc00444
+BIOS_SYSTEM_MODE	=	0x10fd80
 
 	.org	0x0000
 
@@ -24,11 +22,21 @@ SYSTEM_RETURN		=	0xc00444
 	.long	0xc00426	;* no package command (1111)
 	.long	0xc00426, 0xc00426, 0xc00426	;* unused
 	.long	0xc0042c	;* uninitialized interrupt
+.if	_SYSTEM_NCD
+	.long	0xc00522, 0xc00528, 0xc0052e, 0xc00534	;* unused
+	.long	0xc0053a, 0xc004f2, 0xc004ec, 0xc004e6	;* unused
+	.long	0xc004e0	;* virtual interrupt
+.else
 	.long	0xc00426, 0xc00426, 0xc00426, 0xc00426	;* unused
 	.long	0xc00426, 0xc00426, 0xc00426, 0xc00426	;* unused
 	.long	0xc00432	;* virtual interrupt
+.endif
 		;* 0x64 - IRQs
+.if	_SYSTEM_NCD
+	.long	_IRQ_TIMER, _IRQ_VBLANK, _IRQ3
+.else
 	.long	_IRQ_VBLANK, _IRQ_TIMER, _IRQ3
+.endif
 	.long	0xc00426, 0xc00426, 0xc00426, 0xc00426	;* 4-7 unused
 		;* 0x80 - TRAPS
 	.long	_TRAP_0, _TRAP_1, _TRAP_2, _TRAP_3	;* 0-3
@@ -41,7 +49,12 @@ SYSTEM_RETURN		=	0xc00444
 
 		;* 0x100: neo geo header
 	.org	0x100
-	.ascii	"NEO-GEO\0"
+	.ascii	"NEO-GEO"
+.if	_SYSTEM_NCD
+	.byte	_CDDA_FLAG
+.else 	
+	.byte	0
+.endif
 	.word	_NGH
 	.long	_PROGRAM_SIZE
 	.long	_WRK_BCKP_AREA
@@ -60,9 +73,13 @@ SYSTEM_RETURN		=	0xc00444
 		jmp	COIN_SOUND.l
 
 		;* 0x13a - 0x181 empty
+.if	_SYSTEM_NCD
+	.word	_CDDA_ADDR, -1, -1, -1
+.else
+	.word	-1, -1, -1, -1
+.endif
 	.long	-1, -1, -1, -1, -1, -1, -1, -1
 	.long	-1, -1, -1, -1, -1, -1, -1, -1
-	.long	-1, -1
 
 	.org	0x182
 	.long	__security_code
@@ -146,6 +163,20 @@ PRE_USER:
 		;* Reset watchdog
 		move.b	d0, REG_WATCHDOG
 
+		;* must clear sprites tilemap LSB, some
+		;* unibios versions only clear partially
+		lea	REG_VRAMRW, a0
+		move.w	#64, -2(a0)	;* set addr
+		move.w	#2, 2(a0)	;* set modulo
+		move.w	#384, d1
+0:	.rept	32
+		clr.w	(a0)
+	.endr
+		dbra	d1, 0b
+
+		;* Reset watchdog
+		move.b	d0, REG_WATCHDOG
+
 		;* clear TI data & callbacks
 		moveq	#0, d0
 		move.l	d0, VBL_callBack
@@ -155,6 +186,11 @@ PRE_USER:
 
 		;* Flush interrupts
 		move.b	#7, REG_IRQACK
+
+		;* for CD only
+	.if	_SYSTEM_NCD
+		bset	#7, BIOS_SYSTEM_MODE
+	.endif
 
 		;* Enable interrupts
 		move.w	#0x2000, sr

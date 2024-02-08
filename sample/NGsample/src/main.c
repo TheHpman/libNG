@@ -206,7 +206,7 @@ void sortSprites(aSprite *list[], s32 count)
 	}
 }
 
-//#define POOL_MODE
+#define POOL_MODE
 #define LOTS
 #define SHADOW
 
@@ -233,7 +233,7 @@ void aSpriteDemo()
 #ifdef SHADOW
 	aSprite shadow;
 	aSpriteInit(&shadow, &bmary_spr, AS_USE_SPRITEPOOL, 16, 160 + 32, 146, BMARY_SPR_ANIM_IDLE, FLIP_NONE, AS_FLAGS_DEFAULT);
-	shadow.counter = 0xffffffff;
+	shadow.flag_noAnim = 1;	//disable animation
 	shadow.basePalette = 100;
 #endif
 
@@ -462,13 +462,11 @@ void aSpriteDemo()
 		// fixPrintf1(24, 2, 2, 3, "Xbig:%02x Ybig:%02x", demoSpr.Xbig, demoSpr.Ybig);
 
 #ifdef SHADOW
-		// need to pre-animate for shadow to always match
-		aSpriteAnimateSingle(&demoSpr);
+		// need to get next step & frame for shadow to always match
+		shadow.currentFrame = (shadow.currentStep = aSpriteGetNextStep(&demoSpr))->frame;
 		shadow.posX = demoSpr.posX;
 		shadow.posY = demoSpr.posY;
-		shadow.currentFlip = demoSpr.currentFlip ^ 0x2;
-		shadow.currentStep = demoSpr.currentStep;
-		shadow.currentFrame = demoSpr.currentFrame;
+		shadow.currentFlip = demoSpr.currentFlip ^ FLIP_Y; 
 		shadow.Xbig = demoSpr.Xbig;
 		shadow.Ybig = demoSpr.Ybig >> 2;
 #endif

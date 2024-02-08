@@ -482,7 +482,8 @@ typedef struct __attribute__((packed,aligned(2))) aSprite {
 		u16		flags;			/**< Current flags of sprite */
 		struct
 		{
-			u16	flag_padding : 8;
+			u16	flag_noAnim : 1;
+			u16	flag_padding : 7;
 			u16	flag_noDisplay : 1;
 			u16	flag_strictCoords : 1;
 			u16	flag_none : 4;
@@ -1050,7 +1051,7 @@ void aSpriteAnimateList(void *list);
 *  \param list
 *      pointer to aSprite handle
 */
-sprFrame* aSpriteGetNextStep(aSprite *as);
+animStep* aSpriteGetNextStep(aSprite *as);
 
 
 // ========== sprite pools ==========
