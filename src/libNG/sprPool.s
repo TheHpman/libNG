@@ -15,9 +15,14 @@
 .globl spritePoolInit
 spritePoolInit:
 	.set	_ARGS, 4
-		move.l	_ARGS(sp), a0					;*a0=sp				16
-		move.w	_ARGS+4+2(sp), d0				;*d0=baseSprite
-		move.w	_ARGS+8+2(sp), d1				;*d1=poolSize
+	.set	_pool, _ARGS		;* long
+	.set	_baseSprite, _ARGS+4+2	;* word
+	.set	_size, _ARGS+8+2	;* word
+	.set	_clear, _ARGS+12+2	;* word
+
+		move.l	_pool(sp), a0					;*a0=sp				16
+		move.w	_baseSprite(sp), d0				;*d0=baseSprite
+		move.w	_size(sp), d1					;*d1=poolSize
 
 		move.w	d0, SPOOL_POOLSTART(a0)				;*sp->poolStart=baseSprite
 		move.w	d0, SPOOL_CURRENTUP(a0)				;*sp->currentUp=baseSprite
@@ -29,10 +34,10 @@ spritePoolInit:
 		move.w	d0, SPOOL_CURRENTDOWN(a0)			;*sp->currentDown=
 
 		;*  clear sprites
-		tst.w	_ARGS+12+2(sp)					;* clear sprites?
+		tst.w	_clear(sp)					;* clear sprites?
 		beq.s	9f						;*
 		move.l	#0x88008200, d0					;*data, addr			12
-		add.w	_ARGS+4+2(sp), d0				;*
+		add.w	_baseSprite(sp), d0				;*
 		swap	d0						;*d0=addr/data
 
 		movea.l	SC234ptr, a0					;*a0=queue ptr			20
@@ -60,7 +65,9 @@ spritePoolInit:
 .globl spritePoolClose
 spritePoolClose:
 	.set	_ARGS, 4
-		move.l	_ARGS(sp), a0					;*a0=sp				16
+	.set	_pool, _ARGS		;* long
+
+		move.l	_pool(sp), a0					;*a0=sp				16
 		tst.w	SPOOL_WAY(a0)					;*
 		bne.s	5f						;*
 
@@ -113,8 +120,10 @@ spritePoolClose:
 .globl spritePoolDrawList2
 spritePoolDrawList2:
 	.set	_ARGS, 4
-		move.l	_ARGS(sp), a0					;* a0=SP
-		move.l	_ARGS+4(sp), a1					;* a1=list
+	.set	_pool, _ARGS		;* long
+	.set	_list, _ARGS+4		;* long
+		move.l	_pool(sp), a0					;* a0=SP
+		move.l	_list(sp), a1					;* a1=list
 		movem.l	d2-d7/a2-a6, -(sp)				;* push				96
 
 		movea.l	SC234ptr, a5					;* a5=SC234ptr			20
@@ -226,8 +235,10 @@ spritePoolDrawList_2_downNext:
 .globl spritePoolDrawList
 spritePoolDrawList:
 	.set	_ARGS, 4
-		move.l	_ARGS(sp), a0					;* a0=SP
-		move.l	_ARGS+4(sp), a1					;* a1=list
+	.set	_pool, _ARGS		;* long
+	.set	_list, _ARGS+4		;* long
+		move.l	_pool(sp), a0					;* a0=SP
+		move.l	_list(sp), a1					;* a1=list
 		movem.l	d2-d7/a2-a6, -(sp)				;* push				96
 
 		movea.l	SC234ptr, a5					;* a5=SC234ptr			20
@@ -868,8 +879,10 @@ drawUnscaledPatternBuffered:
 .globl spritePoolDrawList3
 spritePoolDrawList3:
 	.set	_ARGS, 4
-		move.l	_ARGS(sp), a0					;* a0=SP
-		move.l	_ARGS+4(sp), a1					;* a1=list
+	.set	_pool, _ARGS		;* long
+	.set	_list, _ARGS+4		;* long
+		move.l	_pool(sp), a0					;* a0=SP
+		move.l	_list(sp), a1					;* a1=list
 		movem.l	d2-d7/a2-a6, -(sp)				;* push				96
 
 		move.l	SC234ptr, a5					;* a5=SC234ptr			20

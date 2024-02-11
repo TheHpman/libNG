@@ -16,10 +16,12 @@ _hexTable:
 .globl fixPrint
 .globl fixPrint2
 	.set	_ARGS, 4
+	.set	_printInfo, _ARGS
+	.set	_text, _ARGS+4
 fixPrint:
 		lea	REG_VRAM_RW, a1					;* a1=vram			12
 		move.w	#0x20, 2(a1)					;* 0x20 increments (line write)	16
-		lea	_ARGS(sp), a0
+		lea	_printInfo(sp), a0
 		move.w	(a0)+, -2(a1)					;* set addr
 		move.w	(a0)+, d0					;* pal & bank in upper byte
 		move.l	(a0), a0					;* a0=text
@@ -34,11 +36,10 @@ fixPrint:
 1:		rts
 
 ;* IRQ safe version
-	.set	_ARGS, 4
 fixPrint2:
 		lea	REG_VRAM_ADDR, a1				;* a1=vram			12
-		move.l	_ARGS(sp), d0					;* d0=addr,pal,bank
-		move.l	_ARGS+4(sp), a0					;* a0=text			16
+		move.l	_printInfo(sp), d0				;* d0=addr,pal,bank
+		move.l	_text(sp), a0					;* a0=text			16
 
 		moveq	#0x20, d1
 		swap	d1						;* d1=address increment value
@@ -57,11 +58,11 @@ fixPrint2:
 ;* *** void fixPrint3(printInfo, *text) *****************
 .globl fixPrint3
 .globl fixPrint4
-	.set	_ARGS, 4
+
 fixPrint3:
 		lea	REG_VRAM_RW, a1					;* a1=vram			12
 		move.w	#0x20, 2(a1)					;* set VRAM mod
-		lea	_ARGS(sp), a0
+		lea	_printInfo(sp), a0
 		move.w	(a0)+, -2(a1)
 		move.w	(a0)+, d1					;* d1=pal
 		move.l	(a0), a0					;* a0=text
@@ -77,11 +78,10 @@ fixPrint3:
 1:		rts
 
 ;* IRQ safe version
-	.set	_ARGS, 4
 fixPrint4:
 		lea	REG_VRAM_ADDR, a1				;* a1=vram			12
-		move.l	_ARGS(sp), d0					;* d0 upper word = addr
-		move.l	_ARGS+4(sp), a0					;* a0=text			16
+		move.l	_printInfo(sp), d0				;* d0 upper word = addr
+		move.l	_text(sp), a0					;* a0=text			16
 		moveq	#0x20, d1
 		swap	d1						;* d1=addr mod
 
@@ -415,4 +415,3 @@ endChar3:
 		lsr.w	#1, d0
 		subq.w	#1, d0						;*				4
 		rts
-		

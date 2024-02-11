@@ -166,19 +166,6 @@ AS_YBIG			= 41
 
 
 ;*	//flags & masks
-;* AS_FLAGS_DEFAULT		0x0000
-;* AS_FLAG_MOVED		0x0001
-;* AS_FLAG_FLIPPED		0x0002
-;* AS_FLAG_STD_COORDS		0x0000
-;* AS_FLAG_STRICT_COORDS	0x0040
-;* AS_FLAG_DISPLAY		0x0000
-;* AS_FLAG_NODISPLAY		0x0080
-;* 
-;* AS_MASK_MOVED		0xfffe
-;* AS_MASK_FLIPPED		0xfffd
-;* AS_MASK_MOVED_FLIPPED	0xfffc
-;* AS_MASK_STRICT_COORDS	0xffbf
-;* AS_MASK_NODISPLAY		0xff7f
 
 ;* !! BYTE USAGE !!
 AS_FLAG_MOVED		= 0x01
@@ -273,8 +260,6 @@ CS_BWJOB		= 12
 ;* rd0, rd1, ra1: scratch data/addr registers
 ;* ra0:	addr register, holds AS ptr
 	.macro	___AS_ANIMATION_BLOCK___ rd0 rd1 ra0 ra1
-	;*	cmp.l	AS_COUNTER(\ra0), \rd0					;*				18
-	;*	blo.s	700f	;* anim_done					;*(unsigned compare)		8 not taken, 10 taken
 		tst.b	AS_FLAGS(\ra0)						;* test anim stop flag		12
 		bmi.s	700f							;*				8/10
 		subq.w	#1, AS_COUNTER(\ra0)					;*				16
@@ -315,8 +300,6 @@ CS_BWJOB		= 12
 		bra.s	600f	;* anim_common_block				;*				10
 
 400:		;* anim_ended:
-;*		moveq	#-1, \rd1						;*				4
-;*		move.l	\rd1, AS_COUNTER(\ra0)					;*display forever		16
 		bset.b	#B_AS_ANIMSTOP, AS_FLAGS(\ra0)				;*				20
 		bra.s	700f	;* anim_done					;*step didn't change
 
@@ -327,10 +310,6 @@ CS_BWJOB		= 12
 
 		;*animating section
 600:		;* anim_common_block:						;*a0=as a1=as->currentanim d0=libNG_frameCounter
-	;*	moveq	#0, \rd1						;* prep for long add		4
-	;*	move.w	STEP_DURATION(\ra1), \rd1				;*				12
-	;*	add.l	\rd0, \rd1						;*				8
-	;*	move.l	\rd1, AS_COUNTER(\ra0)					;*update counter		16
 		move.w	STEP_DURATION(\ra1), AS_COUNTER(\ra0)			;*				20
 
 		;* STEP_FRAME is 0, hence (\ra1)

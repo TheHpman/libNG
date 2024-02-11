@@ -1,8 +1,20 @@
+/**
+ *  \file neogeo.h
+ *  \brief main NeoGeo system defines
+ *
+ *  Provides declarations for hardware registers as well
+ *  as BIOS RAM reserved area
+ */
+
 #ifndef __NEOGEO_H__
 #define __NEOGEO_H__
 
 #include <types.h>
+#include <configNG.h>
 #include <libNG.h>
+#include <libNG_spr.h>
+#include <libNG_scrl.h>
+#include <libNG_pict.h>
 
 #ifdef _MSC_VER
 #define __attribute__(a) /* Visual Studio fix */

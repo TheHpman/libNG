@@ -12,15 +12,21 @@
 pictureInit:
 	;* +a2 +a3 +d2 +d6
 	.set	_ARGS, 20
-
+	.set	_picture, _ARGS		;* long
+	.set	_pictInfo, _ARGS+4	;* long
+	.set	_baseSpr, _ARGS+8+2	;* word
+	.set	_basePal, _ARGS+12+3	;* byte
+	.set	_posX, _ARGS+16+2	;* word
+	.set	_posY, _ARGS+20+2	;* word
+	.set	_flip, _ARGS+24+2	;* word
 		movem.l	d2/d6/a2-a3, -(sp)				;* push regs			
-		move.l	_ARGS(sp), a0					;* a0=p				16
+		move.l	_picture(sp), a0				;* a0=p				16
 
 	#if	BANKING_ENABLE
-		move.b	_ARGS+4(sp), REG_BANKING			;* bankswitch			24
+		move.b	_pictInfo(sp), REG_BANKING			;* bankswitch			24
 	#endif
 
-		move.l	_ARGS+4(sp), a1					;* a1=pi			16
+		move.l	_pictInfo(sp), a1				;* a1=pi			16
 		move.l	a1, P_PICTUREINFO(a0) 				;* p->info=pi			16
 
 		movea.l	SC1ptr, a2					;* a2=SC1ptr			20
@@ -30,20 +36,20 @@ pictureInit:
 		subq.w	#1, d0						;* width loop			4
 		;* d0 has tilewidth loop (-1)
 	
-		move.w	_ARGS+10(sp), d1				;* d1=basesprite		12
+		move.w	_baseSpr(sp), d1				;* d1=basesprite		12
 		move.w	d1, P_BASESPRITE(a0)				;* set p->basesprite12
 
 		move.w	#0x8400, d6					;* X bank addr			8
 		add.w	d1, d6						;*  add basesprite		4
 		swap	d6						;*				4
-		move.w	_ARGS+18(sp), d6				;* d6=posX			12
+		move.w	_posX(sp), d6					;* d6=posX			12
 		move.w	d6, P_POSX(a0)					;* set p->posX			12
 		lsl.w	#7, d6						;*				20
 		move.l	d6, (a3)+					;* q. lead spr posX		12
 
 		;*	y=((YSHIFT-posY)<<7)|p->info->tileHeight;
 		sub.l	#0x2000000, d6					;*				16
-		move.w	_ARGS+22(sp), d6				;* d2=posY			12
+		move.w	_posY(sp), d6					;* d2=posY			12
 		move.w	d6, P_POSY(a0)					;* set p->posY			12	
 		neg.w	d6						;*				4
 		add.w	#YSHIFT, d6					;* YSHIFT			8
@@ -55,7 +61,7 @@ pictureInit:
 		swap	d1						;*				4
 
 ;*		;* d1 has base cmd
-		move.b	_ARGS+12+3(sp), d1				;* d1=basePalette		12
+		move.b	_basePal(sp), d1				;* d1=basePalette		12
 		move.b	d1, P_BASEPALETTE(a0)				;* set basepalette		12
 		lsl.w	#7, d1						;*				18
 		or.b	PI_TILEHEIGHT+1(a1), d1				;* height			12
@@ -63,7 +69,7 @@ pictureInit:
 		swap	d1						;*				4
 		;* d1 has base cmd
 
-		move.w	_ARGS+24+2(sp), d2				;* d2=flip			12	-4
+		move.w	_flip(sp), d2					;* d2=flip			12	-4
 		move.w	d2, P_CURRENTFLIP(a0)				;* set currentFlip		12
 	
 		move.w	PI_COLSIZE(a1), a0				;* a0=strip bytesize12
@@ -111,14 +117,15 @@ pictureInit:
 ;* 				pictureSetFlip
 ;* ******************************************************************************/
 
-;* void picturePushMap(Picture *p)  //force push tilemap data for update, NO POSITION UPDATE
+;* void pictureSetFlip(picture *p, u16 flip);
 
 .globl pictureSetFlip
 pictureSetFlip:
 	.set	_ARGS, 4
-
-		move.l	_ARGS(sp), a0					;* a0=p				16
-		move.w	_ARGS+4+2(sp), d1				;* d1=flip			12	-4
+	.set	_picture, _ARGS		;* long
+	.set	_flip, _ARGS+4+2	;* word
+		move.l	_picture(sp), a0				;* a0=p				16
+		move.w	_flip(sp), d1					;* d1=flip			12	-4
 		cmp.w	P_CURRENTFLIP(a0), d1				;* changed?			12
 		beq.s	1f						;* 				10 taken, 8 if not
 		movem.l	d2-d3, -(sp)					;* save regs			24
@@ -180,10 +187,13 @@ pictureSetFlip:
 .globl pictureSetPos
 pictureSetPos:
 	.set	_ARGS, 4
-		move.l	_ARGS(sp), a0					;* a0=p				16
+	.set	_picture, _ARGS		;* long
+	.set	_toX, _ARGS+4+2		;* word
+	.set	_toY, _ARGS+8+2		;* word
+		move.l	_picture(sp), a0				;* a0=p				16
 		movea.l	SC234ptr, a1					;* a1=ptr			20
 
-		move.w	_ARGS+4+2(sp), d1				;* d1=toX			12
+		move.w	_toX(sp), d1					;* d1=toX			12
 		cmp.w	P_POSX(a0), d1					;* changed?			12
 		beq.s	0f						;*				10 taken, 8 not
 		move.w	d1, P_POSX(a0)					;* update value			12
@@ -193,7 +203,7 @@ pictureSetPos:
 		move.w	d0, (a1)+					;* write addr			8
 		move.w	d1, (a1)+					;* write data			8
 
-0:		move.w	_ARGS+8+2(sp), d1				;* d1=toY			12
+0:		move.w	_toY(sp), d1					;* d1=toY			12
 		cmp.w	P_POSY(a0), d1					;* changed?			12
 		beq.s	0f						;*				10 taken, 8 not
 		move.w	d1, P_POSY(a0)					;* update value			12
@@ -223,11 +233,14 @@ pictureSetPos:
 .globl pictureMove
 pictureMove:
 	.set	_ARGS, 4
+	.set	_picture, _ARGS		;* long
+	.set	_shiftX, _ARGS+4+2	;* word
+	.set	_shiftY, _ARGS+8+2	;* word
 
-		move.l	_ARGS(sp), a0					;* a0=p				16
+		move.l	_picture(sp), a0					;* a0=p				16
 		movea.l	SC234ptr, a1					;* a1=ptr			20
 
-		move.w	_ARGS+6(sp), d1					;* d1=shiftX			12
+		move.w	_shiftX(sp), d1					;* d1=shiftX			12
 		beq.s	0f						;* 0=no move			10 taken, 8 not
 		move.w	#0x8400, d0					;* base addr			8
 		add.w	P_BASESPRITE(a0), d0				;* add spr			12
@@ -237,7 +250,7 @@ pictureMove:
 		lsl.w	#7, d1						;* shift value			20
 		move.w	d1, (a1)+					;* write data			8				
 
-0:		move.w	_ARGS+10(sp), d1				;* d0=shiftY			12
+0:		move.w	_shiftY(sp), d1					;* d0=shiftY			12
 		beq.s	0f						;* 0=no move			10 taken, 8 not
 		move.w	#0x8200, d0					;* base addr			8
 		add.w	P_BASESPRITE(a0), d0				;* add spr			12
@@ -267,8 +280,9 @@ pictureMove:
 .globl pictureHide
 pictureHide:
 	.set	_ARGS, 4
+	.set	_picture, _ARGS		;* long
 
-		move.l	_ARGS(sp), a0					;* a0=p				16
+		move.l	_picture(sp), a0				;* a0=p				16
 		movea.l	SC234ptr, a1					;* a1=ptr			20
 
 		move.l	#0x88008200, d0					;* data, addr			12
@@ -289,8 +303,9 @@ pictureHide:
 .globl pictureShow
 pictureShow:
 	.set	_ARGS, 4
+	.set	_picture, _ARGS		;* long
 	
-		move.l	_ARGS(sp), a0					;* a0=p				16
+		move.l	_picture(sp), a0				;* a0=p				16
 		movea.l	SC234ptr, a1					;* a1=ptr			20
 
 		move.w	#0x8200, d0					;*				8

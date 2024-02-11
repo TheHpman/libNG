@@ -2,7 +2,7 @@
  *  \file configNG.h
  *  \brief libNG configuration file
  *
- * This unit is used to define some specific compilation option of the library.
+ *  Sets basic options/parameters to compile library with.
  */
 
 #ifndef _CONFIG_NG_
@@ -72,12 +72,14 @@
  *  \brief
  *      Mame debug print area
  */
-#define MAME_PRINT 0xc00000
+#define MAME_PRINT_ADDR 0xc00000
+#define MAME_PRINT_BUFFER ((char*)MAME_PRINT_ADDR)
 
 /**
  *  \brief
  *      Mame debug log area
  */
-#define MAME_LOG 0xc10000
+#define MAME_LOG_ADDR 0xc10000
+#define MAME_LOG_BUFFER ((char*)MAME_LOG_ADDR)
 
 #endif // _CONFIG_NG_

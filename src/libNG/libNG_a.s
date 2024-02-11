@@ -84,10 +84,10 @@ addMessage:
 .globl jobMeterSetup
 .globl jobMeterSetup2
 	.set	_ARGS, 4
+	.set	_debug, _ARGS+2		;* word
 
 jobMeterSetup2:
 		lea	REG_VRAM_ADDR, a0
-;*		move.l	#0x74e0f000, d1					;* fix last column 74e0, data 0xf000
 		move.l	#0x74e00000+((JOB_METER_PALETTE&0xf)<<12)+JOB_METER_CHARACTER, d1	;* fix last column 74e0, character
 		moveq	#32-1, d0					;* 32 lines (-1)
 
@@ -102,11 +102,10 @@ jobMeterSetup:
 		move.w	#0x74e0, -2(a0)					;* fix last column 74e0
 		moveq	#32-1, d0					;* 32 lines
 
-;*0:		move.w	#0xf000, (a0)					;* write plain tile / palette 0xf
 0:		move.w	#((JOB_METER_PALETTE&0xf)<<12)+JOB_METER_CHARACTER, (a0)	;* write character
 		dbra	d0, 0b						;* loop
 
-5:		tst.w	_ARGS+2(sp)
+5:		tst.w	_debug(sp)
 		beq.s	9f						;* false? => end
 
 		bset.b	#0, 0x10fe35					;* set unibios devmode flag.

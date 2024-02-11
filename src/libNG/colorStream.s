@@ -10,19 +10,23 @@
 .globl colorStreamInit
 colorStreamInit:
 	.set	_ARGS, 4
+	.set	_cs, _ARGS		;* long
+	.set	_csInfo, _ARGS+4	;* long
+	.set	_basePal, _ARGS+8+2	;* word
+	.set	_config, _ARGS+12+2	;* word
 
-		move.l	_ARGS(sp), a0					;*a0=cs				16
-		move.l	_ARGS+4(sp), a1					;*a1=csi			16
+		move.l	_cs(sp), a0					;*a0=cs				16
+		move.l	_csInfo(sp), a1					;*a1=csi			16
 	#if	BANKING_ENABLE
-		move.b	_ARGS+4(sp), REG_BANKING			;* bankswitch			24
+		move.b	_csInfo(sp), REG_BANKING			;* bankswitch			24
 	#endif
 		move.l	a1, CS_INFO(a0)					;*cs->info=csi
 
-		move.w	_ARGS+8+2(sp), d0				;*d0=basePalette
+		move.w	_basePal(sp), d0				;*d0=basePalette
 		lsl.w	#5, d0						;*d0<<=5
 		move.w	d0, CS_PALMOD(a0)				;*cs->palMod=basePalette<<5
 
-		tst.w	_ARGS+14(sp)					;*config==0?
+		tst.w	_config(sp)					;*config==0?
 		beq.s	0f						;*==0?
 		;* ENDCONFIG
 		move.w	#0xffff, CS_POSITION(a0)			;*cs->position=0xffff
@@ -59,8 +63,11 @@ colorStreamInit:
 .globl colorStreamSetPos
 colorStreamSetPos:
 	.set	_ARGS, 4
-		move.l	_ARGS(sp), a0					;*a0=cs				16
-		move.w	_ARGS+6(sp), d0					;*d0=pos			
+	.set	_cs, _ARGS	;* long
+	.set	_pos, _ARGS+4+2	;* word
+
+		move.l	_cs(sp), a0					;*a0=cs				16
+		move.w	_pos(sp), d0					;*d0=pos			
 	#if	BANKING_ENABLE
 		move.b	CS_INFO(a0), REG_BANKING			;* bankswitch			24
 	#endif

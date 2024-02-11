@@ -64,23 +64,30 @@ CFG_REFILL_DATALENGTH2	=	SC_CONFIG + 16
 ;*	void scrollerInit (scroller *s, scrollerInfo *si, ushort sprite, ushort palette, short posX, short posY) {
 scrollerInit:
 	.set	_ARGS, 4+40
+	.set	_scrlr, _ARGS		;* long
+	.set	_scrlInfo, _ARGS+4	;* long
+	.set	_baseSpr, _ARGS+8+2	;* word
+	.set	_basePal, _ARGS+12+2	;* word
+	.set	_posX, _ARGS+16+2	;* word
+	.set	_posY, _ARGS+20+2	;* word
+
 		movem.l	d2-d7/a2-a5, -(sp)				;* push
 	
 		move.l	SC1ptr, a4					;* a4=SC1ptr
 		move.l	SC234ptr, a5					;*a5=SC234ptr			20
-		move.l	_ARGS(sp), a0					;* a0=scroller
+		move.l	_scrlr(sp), a0					;* a0=scroller
 
 	#if	BANKING_ENABLE
-		move.b	_ARGS+4(sp), REG_BANKING			;* bankswitch			24
+		move.b	_scrlInfo(sp), REG_BANKING			;* bankswitch			24
 	#endif
 
-		move.l	_ARGS+4(sp), a1					;* a1=scrlInfo
+		move.l	_scrlInfo(sp), a1				;* a1=scrlInfo
 		move.l	a1, SC_INFO(a0)					;* set scrollerInfo
 
-		move.w	_ARGS+8+2(sp), d2
+		move.w	_baseSpr(sp), d2
 		move.w	d2, SC_BASESPRITE(a0)				;* set baseSprite (d2)
 
-		move.w	_ARGS+20+2(sp), d0				;*d0=posY
+		move.w	_posY(sp), d0					;*d0=posY
 
 		moveq	#1, d4
 		swap	d4						;* d4=spr increment
@@ -177,12 +184,12 @@ _shortStrip:	;* strip is < 32 tiles, no refills needed	TODO:<=32
 		add.w	d6, a2
 		add.w	d6, a2						;* set colIndex[frontSpr] ptr
 
-		move.w	_ARGS+12+2(sp), d4
+		move.w	_basePal(sp), d4
 		move.w	d4, SC_BASEPALETTE(a0)				;* set basePalette
 		move.b	d4, -(sp)
 		move.w	(sp)+, d4
 	
-_fillStripA	:
+_fillStripA:
 		moveq	#20, d7
 		move.b	CFG_DATALENGTH+1(a0), d4
 		add.b	d4, d4
@@ -298,9 +305,12 @@ _fillStripB:
 
 scrollerSetPos:
 	.set	_ARGS, 4
-		move.l	_ARGS(sp), a0					;* a0 = scroller handler
-		move.l	_ARGS+4+2(sp), d0
-		move.w	_ARGS+8+2(sp), d0				;* d0=targetX|targetY
+	.set	_scrlr, _ARGS		;* long
+	.set	_posX, _ARGS+4+2	;* word
+	.set	_posY, _ARGS+8+2	;* word
+		move.l	_scrlr(sp), a0					;* a0 = scroller handler
+		move.l	_posX(sp), d0					;* .l read to p^lace in upper word
+		move.w	_posY(sp), d0					;* d0=targetX|targetY
 		cmp.l	SC_POSX(a0), d0					;* X or Y changed?
 		beq.s	9b						;* return if unchanged
 

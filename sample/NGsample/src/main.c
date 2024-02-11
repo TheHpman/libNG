@@ -235,6 +235,10 @@ void aSpriteDemo()
 	aSpriteInit(&shadow, &bmary_spr, AS_USE_SPRITEPOOL, 16, 160 + 32, 146, BMARY_SPR_ANIM_IDLE, FLIP_NONE, AS_FLAGS_DEFAULT);
 	shadow.flag_noAnim = 1;	//disable animation
 	shadow.basePalette = 100;
+	u16 *clr = (u16*)&PALRAM.pals[100].color[1];
+	for(u16 x = 0; x < 15; x++)
+		*clr++ = 0x8000;
+	
 #endif
 
 	clearFixLayer();
@@ -443,9 +447,6 @@ void aSpriteDemo()
 				way2 = JOY_UP;
 		}
 
-		// demoSpr2.Xbig = demoSpr2.Ybig = 0xff - (220 - (demoSpr2.posY > 220 ? 220 : demoSpr2.posY));
-		// demoSpr3.Xbig = demoSpr3.Ybig = 0xff - (220 - (demoSpr3.posY > 220 ? 220 : demoSpr3.posY));
-
 #ifdef POOL_MODE
 		sortSprites((aSprite **)&drawTable[1], sortSize);
 		// sortSprites((aSprite **)&drawTable[2], sortSize);
@@ -459,7 +460,6 @@ void aSpriteDemo()
 			demoSpr.Xbig--;
 		else if (BIOS.P2.CURRENT.RIGHT)
 			demoSpr.Xbig++;
-		// fixPrintf1(24, 2, 2, 3, "Xbig:%02x Ybig:%02x", demoSpr.Xbig, demoSpr.Ybig);
 
 #ifdef SHADOW
 		// need to get next step & frame for shadow to always match
@@ -582,7 +582,7 @@ void pictureDemo()
 	pictureInit(&testPict, &terrypict, 1, 16, x, y, FLIP_NONE);
 	palJobPut(16, terrypict.palInfo->count, terrypict.palInfo->data);
 
-	rasterAddr = 0x8400 + testPict.baseSprite;
+	rasterAddr = VRAM_POSX_ADDR(testPict.baseSprite);
 
 	extern u16 mess_pictureDemo[];
 	addMessage(mess_pictureDemo);
@@ -943,7 +943,6 @@ void fixDemo()
 	u16 powerString[11] = {0x3e9, 0x3e0, 0x3e0, 0x3e0, 0x3e0, 0x3e0, 0x3e0, 0x3e0, 0x3e0, 0x3ea, 0};
 	char healthTmp[18] = "\xc9                ";
 	u16 healthTopString[20], healthBotString[20], counterString[20];
-
 	u8 fadeDensity[40];
 
 	clearFixLayer();
@@ -1018,16 +1017,16 @@ void fixDemo()
 				a = 1;
 				do
 				{
-					if (i >= 39)
-						goto _skip;
-					if (fadeDensity[i] != a)
+					if (i < 39)
 					{
-						fadeDensity[i] = a;
-						fixJobPut(i, 16, FIX_COLUMN_WRITE, 14, fadeData[a]);
+						if (fadeDensity[i] != a)
+						{
+							fadeDensity[i] = a;
+							fixJobPut(i, 16, FIX_COLUMN_WRITE, 14, fadeData[a]);
+						}
+						if (a == 10)
+							break;
 					}
-					if (a == 10)
-						break;
-				_skip:
 					if (++b >= 3)
 					{
 						a = a < 10 ? a + 1 : a;
@@ -1040,16 +1039,16 @@ void fixDemo()
 				a = 9;
 				do
 				{
-					if (i >= 39)
-						goto _skip2;
-					if (fadeDensity[i] != a)
+					if (i < 39)
 					{
-						fadeDensity[i] = a;
-						fixJobPut(i, 16, FIX_COLUMN_WRITE, 14, fadeData[a]);
+						if (fadeDensity[i] != a)
+						{
+							fadeDensity[i] = a;
+							fixJobPut(i, 16, FIX_COLUMN_WRITE, 14, fadeData[a]);
+						}
+						if (a == 0)
+							break;
 					}
-					if (a == 0)
-						break;
-				_skip2:
 					if (++b >= 3)
 					{
 						a = a > 0 ? a - 1 : a;
@@ -1085,7 +1084,7 @@ void colorStreamDemoA()
 
 	clearFixLayer();
 	scrollerInit(&sc, &streamScroll, 1, 16, 0, 0);
-	colorStreamInit(&stream, &streamScroll_colorStream, 16, COLORSTREAM_STARTCONFIG);
+	colorStreamInit(&stream, streamScroll.csInfo, 16, COLORSTREAM_STARTCONFIG);
 
 	addMessage(mess_colorStreamDemoA);
 
@@ -1151,7 +1150,7 @@ void colorStreamDemoB()
 
 	clearFixLayer();
 	scrollerInit(&sc, &SNKLogoStrip, 1, 16, 0, 0);
-	colorStreamInit(&stream, &SNKLogoStrip_colorStream, 16, COLORSTREAM_STARTCONFIG);
+	colorStreamInit(&stream, SNKLogoStrip.csInfo, 16, COLORSTREAM_STARTCONFIG);
 
 	addMessage(mess_colorStreamDemoB);
 
@@ -1218,6 +1217,8 @@ void testCallBack()
 #define CURSOR_MAX 7
 void (*const demos[])() = {pictureDemo, scrollerDemo, aSpriteDemo, fixDemo, rasterScrollDemo, desertRaster, colorStreamDemoA, colorStreamDemoB};
 
+// Improper USER usage in this simple test program, 
+//  see template project for correct usage.
 void USER()
 {
 	u16 cursor = 0;
@@ -1233,8 +1234,8 @@ void USER()
 	VBL_skipCallBack = testCallBack;
 
 	fixPrintf1(PRINTINFO(0, 2, 1, 3), "RAM usage: 0x%04x (%d)", ((u32)&_bend) - 0x100000, ((u32)&_bend) - 0x100000);
-	sprintf2((char*)MAME_PRINT, "RAM usage: 0x%04x (%d)\n", ((u32)&_bend) - 0x100000, ((u32)&_bend) - 0x100000);
-	sprintf2((char*)MAME_LOG, "RAM usage: 0x%04x (%d)\n", ((u32)&_bend) - 0x100000, ((u32)&_bend) - 0x100000);
+	sprintf2(MAME_PRINT_BUFFER, "RAM usage: 0x%04x (%d)\n", ((u32)&_bend) - 0x100000, ((u32)&_bend) - 0x100000);
+	sprintf2(MAME_LOG_BUFFER, "RAM usage: 0x%04x (%d)\n", ((u32)&_bend) - 0x100000, ((u32)&_bend) - 0x100000);
 
 	while (1)
 	{
@@ -1266,7 +1267,6 @@ void USER()
 		fixPrint(PRINTINFO(8, 28, 5, 3), "libNG tests - @2024 Hpman");
 	}
 }
-
 
 void COIN_SOUND()
 {

@@ -120,6 +120,8 @@ aSpriteInit:
 ;* 				aSpriteSetAnim
 ;* ******************************************************************************/
 
+;* void aSpriteSetAnim(aSprite *as, u16 anim);
+
 	.set _ARGS, 4
 	.set _aSprite, _ARGS
 	.set _anim, _ARGS+4+2	;* word
@@ -140,9 +142,6 @@ aSpriteSetAnim:
 0:		move.w	d0, AS_ANIMID(a0)				;* update ID			12
 		move.w	d0, AS_CURRENTANIMID(a0)			;* update current ID		12
 		move.w	#-1, AS_CURRENTSTEPNUM(a0)			;* as->currentStepNum=-1	 16
-	;*	moveq	#0, d1						;*				4
-	;*	move.l	d1, AS_COUNTER(a0)				;* as->counter=0		16
-	;*	move.w	d1, AS_REPEATS(a0)				;* as-> repeats=0		12
 		move.w	#1, AS_COUNTER(a0)				;* as->counter=1		16
 		move.w	#0, AS_REPEATS(a0)				;* as-> repeats=0		16
 
@@ -164,6 +163,8 @@ aSpriteSetAnim:
 ;* /******************************************************************************
 ;* 				aSpriteSetAnimStep
 ;* ******************************************************************************/
+
+;* void aSpriteSetAnimStep(aSprite *as, u16 anim, u16 step);
 
 	.set _ARGS, 4
 	.set _aSprite, _ARGS
@@ -209,9 +210,6 @@ aSpriteSetAnimStep:
 		_COMPUTE_STEP_	d1, a1					;* a1+= stepsize * step#
 		move.l	a1, AS_CURRENTSTEP(a0)				;* as->currentStep		16
 	
-	;*	moveq	#0, d1						;*				4
-	;*	move.l	d1, AS_COUNTER(a0)				;* as->counter=0		16
-	;*	move.w	d1, AS_REPEATS(a0)				;* as-> repeats=0		12
 		move.w	#1, AS_COUNTER(a0)				;* as->counter=1		16
 		clr.w	AS_REPEATS(a0)					;* as-> repeats=0		16
 
@@ -221,6 +219,8 @@ aSpriteSetAnimStep:
 ;* /******************************************************************************
 ;* 				aSpriteSetStep
 ;* ******************************************************************************/
+
+;* void aSpriteSetStep(aSprite *as, u16 step);
 
 	.set _ARGS, 4
 	.set _aSprite, _ARGS
@@ -247,9 +247,6 @@ aSpriteSetStep:
 		sub.w	#STEP_BYTESIZE, a1				;*				12
 		move.l	a1, AS_CURRENTSTEP(a0)				;* as->currentStep		16
 	
-	;*	moveq	#0, d1						;*				4
-	;*	move.l	d1, AS_COUNTER(a0)				;* as->counter=0		16
-;*	;*	move.w	d1, AS_REPEATS(a0)				;* as-> repeats=0		12
 		move.w	#1, AS_COUNTER(a0)				;* as->counter=1		16
 ;*		clr.w	AS_REPEATS(a0)					;* as-> repeats=0		16
 
@@ -260,13 +257,17 @@ aSpriteSetStep:
 ;* 				aSpriteSetPos
 ;* ******************************************************************************/
 
+;* void aSpriteSetPos(aSprite *as, s16 newX, s16 newY);
+
 .globl aSpriteSetPos
 aSpriteSetPos:
 	.set	_ARGS, 4
-
-		move.l	_ARGS(sp), a0					;* a0=as			16	
-		move.l	_ARGS+4+2(sp), d0				;* d0=newX|0000			16
-		move.w	_ARGS+8+2(sp), d0				;* d0=newX|newY			12
+	.set	_aSprite, _ARGS		;* long
+	.set	_posX, _ARGS+4+2	;* word
+	.set	_posY, _ARGS+8+2	;* word
+		move.l	_aSprite(sp), a0				;* a0=as			16	
+		move.l	_posX(sp), d0					;* d0=newX|0000			16
+		move.w	_posY(sp), d0					;* d0=newX|newY			12
 		cmp.l	AS_POSX(a0), d0					;*				18
 		beq.s	9f						;*				8 not taken, 10 taken
 
@@ -279,23 +280,27 @@ aSpriteSetPos:
 ;* 				aSpriteMove
 ;* ******************************************************************************/
 
+;* void aSpriteMove(aSprite *as, s16 shiftX, s16 shiftY);
+
 .globl aSpriteMove
 aSpriteMove:
 	.set	_ARGS, 4
-
-		move.l	_ARGS(sp), a0					;* a0=as			16
-		move.w	_ARGS+6(sp), d0					;* d0=shiftX			12
+	.set	_aSprite, _ARGS		;* long
+	.set	_shiftX, _ARGS+4+2	;* word
+	.set	_shiftY, _ARGS+8+2	;* word
+		move.l	_aSprite(sp), a0				;* a0=as			16
+		move.w	_shiftX(sp), d0					;* d0=shiftX			12
 		beq.s	0f						;* ==0? next			8 not taken, 10 taken
 		add.w	d0, AS_POSX(a0)					;*				16
 		ori.b	#AS_FLAG_MOVED, AS_FLAGS+1(a0)			;* flag as moved		20
 
-			move.w	_ARGS+10(sp), d0			;* d0=shiftY			12
+			move.w	_shiftY(sp), d0				;* d0=shiftY			12
 			;* slower on avg.
 			;*	beq.s	9f				;*				8 not taken, 10 taken
 			add.w	d0, AS_POSY(a0)				;*				16
 			rts
 
-0:		move.w	_ARGS+10(sp), d0				;* d0=shiftY			12
+0:		move.w	_shiftY(sp), d0					;* d0=shiftY			12
 		beq.s	9f						;* 				8 not taken, 10 taken
 		add.w	d0, AS_POSY(a0)					;* 				16
 		ori.b	#AS_FLAG_MOVED, AS_FLAGS+1(a0)			;* flag as moved		20
@@ -307,12 +312,15 @@ aSpriteMove:
 ;* 				aSpriteSetFlip
 ;* ******************************************************************************/
 
+;* void aSpriteSetFlip(aSprite *as, u16 flip);
+
 .globl aSpriteSetFlip
 aSpriteSetFlip:
 	.set	_ARGS, 4
-	
-		move.l	_ARGS(sp), a0					;* a0=as			nah need16
-		move.w	_ARGS+6(sp), d0					;* d0=flip			12
+	.set	_aSprite, _ARGS		;* long
+	.set	_flip, _ARGS+4+2	;* word
+		move.l	_aSprite(sp), a0				;* a0=as			nah need16
+		move.w	_flip(sp), d0					;* d0=flip			12
 		cmp.w	AS_CURRENTFLIP(a0), d0				;* same flip? end		12
 		beq.s	0f						;*				8 not taken, 10 taken
 		move.w	d0, AS_CURRENTFLIP(a0)				;* sets new flip		12
@@ -330,12 +338,14 @@ aSpriteSetFlip:
 .globl aSpriteSetScale
 aSpriteSetScale:
 	.set	_ARGS, 4
-	
-		move.l	_ARGS(sp), a0					;* a0=as			16
-		move.b	_ARGS+4+3(sp), -(sp)				;* d0=Xbig			12
+	.set	_aSprite, _ARGS		;* long
+	.set	_Xbig, _ARGS+4+3	;* byte
+	.set	_Ybig, _ARGS+8+3	;* byte
+		move.l	_aSprite(sp), a0				;* a0=as			16
+		move.b	_Xbig(sp), -(sp)				;* d0=Xbig			12
 		move.w	(sp)+, d0
-		move.b	_ARGS+8+3(sp), d0				;* d0=Xbig|Ybig			12
-	
+		move.b	_Ybig(sp), d0					;* d0=Xbig|Ybig			12
+
 		cmp.w	AS_XBIG(a0), d0					;* same scale? end		12
 		beq.s	0f						;*				8 not taken, 10 taken
 		move.w	d0, AS_XBIG(a0)					;* sets new flip		12
@@ -348,12 +358,13 @@ aSpriteSetScale:
 ;* 				aSpriteAnimateSingle
 ;* ******************************************************************************/
 
-;* void aSpriteAnimateSingle(aSprite *as) 
+;* void aSpriteAnimateSingle(aSprite *as)
+
 .globl aSpriteAnimateSingle
 aSpriteAnimateSingle:
 	.set	_ARGS, 4
-	
-		move.l	_ARGS(sp), a0					;* a0=as			16
+	.set	_aSprite, _ARGS		;* long
+		move.l	_aSprite(sp), a0				;* a0=as			16
 	
 	#if	BANKING_ENABLE
 		move.b	AS_BANK(a0), REG_BANKING			;* bankswitch			24
@@ -371,12 +382,13 @@ aSpriteAnimateSingle:
 ;* ******************************************************************************/
 
 ;* void aSpriteAnimateList(aSprite *as) 
+
 .globl aSpriteAnimateList
 aSpriteAnimateList:
 	.set	_ARGS, 8
-	
+	.set	_aSprite, _ARGS		;* long
 		move.l	a2, -(sp)
-		move.l	_ARGS(sp), a2					;* a2=list			16
+		move.l	_aSprite(sp), a2				;* a2=list			16
 	
 		move.l	libNG_frameCounter, d0
 		move.l	(a2)+, d1
@@ -404,13 +416,15 @@ aSpriteAnimateList:
 ;* ******************************************************************************/
 
 ;* void aSpriteGetNextStep(aSprite *as) 
+
 .globl aSpriteGetNextStep
 aSpriteGetNextStep:
 	.set	_ARGS, 4
-		move.l	_ARGS(sp), a0
+	.set	_aSprite, _ARGS		;* long
+		move.l	_aSprite(sp), a0
 
-		tst.b	AS_FLAGS(a0)						;* test anim stop flag		12
-		bmi.s	_sameStep							;*				8/10
+		tst.b	AS_FLAGS(a0)					;* test anim stop flag		12
+		bmi.s	_sameStep					;*				8/10
 		cmp.w	#1, AS_COUNTER(a0)
 		bne.s	_sameStep
 
@@ -422,20 +436,20 @@ aSpriteGetNextStep:
 		move.l	AS_CURRENTSTEP(a0), a1				;*				16
 		lea	STEP_BYTESIZE(a1), a1
 
-100:		move.b	(a1), d1						;*				8
+100:		move.b	(a1), d1					;*				8
 		bpl.s	_stepUp		;* anim_do_next_step
 		add.b	d1, d1
 		beq.s	_doRepeat	;* anim_do_repeat
 		bmi.s	_sameStep	;* anim_ended
 
  		;* anim_do_link:
-		move.l	4(a1), d0	;* get step				;*				12
+		move.l	4(a1), d0	;* get step			;*				12
 		rts
 
 _doRepeat:	;* anim_do_repeat:
-		move.w	AS_REPEATS(a0), d0					;*d1=as->repeats		12
+		move.w	AS_REPEATS(a0), d0				;*d1=as->repeats		12
 		addq.w	#2, a1
-		cmp.w	(a1)+, d0						;*				12
+		cmp.w	(a1)+, d0					;*				12
 		bhs.s	100b	;* repeats done
 		;* repeating
 		move.l	AS_STEPS(a0), d0
@@ -454,44 +468,25 @@ _sameStep:	move.l	AS_CURRENTSTEP(a0), d0
 
 
 ;*/******************************************************************************
-;*				aSpritePush - internal, print pattern
+;*			aSpritePush - internal, print pattern
 ;*******************************************************************************/
 
-;*	.globl aSpritePush_int
 aSpritePush_int:
-	;*a0=as
-	;*	move.l a2, -(sp)					;*push				12
+		;* a0=as
 		movem.l	d2-d4/a2, -(sp)					;*				40
 	
 		and.b	#AS_MASK_MOVED_FLIPPED, AS_FLAGS+1(a0)		;*clear flags			20
 	
 		move.l	AS_CURRENTFRAME(a0), a2				;*as->a1=currentframe		16
-
-;*			move.w	AS_BASEPALETTE(a0), d0			;*				12
-;*		;*	lsl.w #6, d0					;*				18
-;*		;*	or.w FRAME_TILEHEIGHT(a2), d0			;*				12
-;*		;*	add.w d0, d0					;*				4
-;*		;*	add.w d0, d0					;*				4		38
-;*			lsl.w	#8, d0					;*				22
-;*			or.w	FRAME_COLSIZE(a2), d0			;*				12		34
-
-;*		move.w	AS_BASEPALETTE(a0), d0				;*				12
-;*		lsl.w	#8, d0						;*				22
-;*		or.w	FRAME_TILEHEIGHT(a2), d0			;*				12
-;*		add.b	d0, d0						;*				4		38 (50)
 		move.w	AS_BASEPALETTE(a0), d0				;*				12
 		move.b	FRAME_TILEHEIGHT+1(a2), d0			;*				12
-		add.b	d0, d0						;*				4		28
+		add.b	d0, d0						;*				4
 
 		swap	d0						;*				4
 		move.w	AS_BASESPRITE(a0), d0				;*AS_BASESPRITE			8
 		lsl.w	#6, d0						;*				18
 		;*d0 has base cmd
 
-;*		move.w FRAME_COLSIZE(a2), d2				;*				12
-;*		swap d2							;*				4
-;*		move.w FRAME_TILEWIDTH(a2), d2				;*d2=colsize,tilewidth		12
-		;*move.l	FRAME_TILEWIDTH(a2), d2			;*				16
 		move.l	(a2), d2					;*				12
 		add.w	d2, d2						;*				4
 		swap	d2						;*d2=colsize,tilewidth		4
@@ -517,7 +512,7 @@ aSpritePush_int:
 	
 		move.l	#0x00408200, d2					;*stick bit+addr		12
 		add.w	AS_BASESPRITE(a0), d2				;*				12
-		swap	d2						;*				4			+4
+		swap	d2						;*				4
 		;*d2= SC234 data, addr
 
 ;*write
@@ -530,11 +525,10 @@ aSpritePush_int:
 
 0:		add.w	#64, d0						;*cmd+=64
 		add.l	d3, d1						;*addr+=col bytesize
-		;*addq.w #1, d2						;*next sprite			4
-		add.l	#0x10000, d2					;*				16			+12
+		add.l	#0x10000, d2					;*next spr			16
 		move.l	d0, (a2)+					;*queue cmd			12
 		move.l	d1, (a2)+					;*queue addr			12
-		move.l	d2, (a1)+					;*queue sprite link		12							//could be optimized
+		move.l	d2, (a1)+					;*queue sprite link		12			*
 		dbra	d4, 0b						;*
 
 		move.l	a2, SC1ptr					;*save ptr			20
@@ -543,19 +537,17 @@ aSpritePush_int:
 
 
 ;*/******************************************************************************
-;*				aSpritePushPos // internal, update position
+;*			aSpritePushPos // internal, update position
 ;*******************************************************************************/
 
 aSpritePushPos_int:
-		;*a0=as
-
+		;* a0=as
 		move.l	a2, -(sp)					;*push				12
 		movea.l	SC234ptr, a1					;*a1=SC234ptr			20
 		and.b	#AS_MASK_MOVED, AS_FLAGS+1(a0)			;*CLEAR FLAG
 
 altPushPosEntry:							;*a1=SC234, ptr updated flags cleared
 		move.l	AS_CURRENTSTEP(a0), a2				;*a2=as->currentstep		16
-	;*	move.l	STEP_SHIFTX(a2), d1				;*d1=shiftX/shiftY		16
 		move.w	STEP_SHIFTX(a2), d1
 		swap	d1
 		move.w	STEP_SHIFTY(a2), d1
@@ -637,16 +629,13 @@ altPushPosEntry:							;*a1=SC234, ptr updated flags cleared
 .globl aSpriteAnimate
 aSpriteAnimate:
 	.set	_ARGS, 4
-
-		move.l	_ARGS(sp), a0					;*a0=as				16
+	.set	_aSprite, _ARGS		;* long
+		move.l	_aSprite(sp), a0				;*a0=as				16
 
 	#if	BANKING_ENABLE
 		move.b	AS_BANK(a0), REG_BANKING			;* bankswitch			24
 	#endif
 
-	;*	move.l	libNG_frameCounter, d0				;*				20
-	;*	cmp.l	AS_COUNTER(a0), d0				;*				18
-	;*	blo.s	700f						;*(unsigned compare)		8 not taken, 10 taken
 		tst.b	AS_FLAGS(a0)					;* test anim stop flag		12
 		bmi.s	700f						;*				8/10
 		subq.w	#1, AS_COUNTER(a0)				;*				16
@@ -687,8 +676,6 @@ aSpriteAnimate:
 		bra.s	600f	;* anim_common_block	
 
 400:		;* anim_ended:
-	;*	moveq	#-1, d1						;*				4
-	;*	move.l	d1, AS_COUNTER(a0)				;*display forever		16
 		bset.b	#B_AS_ANIMSTOP, AS_FLAGS(a0)			;*				20
 		bra.s	700f	;* anim_done	
 
@@ -719,10 +706,6 @@ aSpriteAnimate_same_step2:					;* step didn't change, check if moved or flipped
 
 ;*animating section
 aSpriteAnimate_common_block2:					;*a0=as a1=as->currentanim d0=libNG_frameCounter
-	;*	moveq	#0, d1						;* //
-	;*	move.w	STEP_DURATION(a1), d1				;*				12
-	;*	add.l	d1, d0						;*				8
-	;*	move.l	d0, AS_COUNTER(a0)				;*update counter		16
 		move.w	STEP_DURATION(a1), AS_COUNTER(a0)		;*				20
 
 		move.l	AS_CURRENTFRAME(a0), d0				;*d0=old frame			16
@@ -772,8 +755,3 @@ aSpriteAnimate_common_block2:					;*a0=as a1=as->currentanim d0=libNG_frameCount
 		move.l	a1, SC234ptr					;*save ptr			20
 
 0:		rts							;*returns to pushed address
-
-;*	cases:
-;*	- no updates
-;*	- update pattern, positions
-;*	- update positions

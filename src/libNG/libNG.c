@@ -1,9 +1,6 @@
 #include <types.h>
 #include <libNG.h>
 
-// SC data:
-// SC1:		pal/size/vram_addr, data_addr
-// SC234:	vram_addr, data
 
 /******************************************************************/
 #pragma GCC diagnostic push
