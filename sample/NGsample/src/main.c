@@ -235,6 +235,7 @@ void aSpriteDemo()
 	aSpriteInit(&shadow, &bmary_spr, AS_USE_SPRITEPOOL, 16, 160 + 32, 146, BMARY_SPR_ANIM_IDLE, FLIP_NONE, AS_FLAGS_DEFAULT);
 	shadow.flag_noAnim = 1;	//disable animation
 	shadow.basePalette = 100;
+	// clear palette #100
 	u16 *clr = (u16*)&PALRAM.pals[100].color[1];
 	for(u16 x = 0; x < 15; x++)
 		*clr++ = 0x8000;
@@ -246,8 +247,8 @@ void aSpriteDemo()
 	jobMeterSetup(TRUE);
 
 #ifdef POOL_MODE
-	// aSpriteInit(&demoSpr, &bmary_spr, AS_USE_SPRITEPOOL, 16, x, y, BMARY_SPR_ANIM_IDLE, FLIP_NONE, AS_FLAGS_DEFAULT);
-	aSpriteInit(&demoSpr, &bmary_spr, AS_USE_SPRITEPOOL, 16, x, y, BMARY_SPR_ANIM_NEWFMT, FLIP_NONE, AS_FLAGS_DEFAULT);
+	aSpriteInit(&demoSpr, &bmary_spr, AS_USE_SPRITEPOOL, 16, x, y, BMARY_SPR_ANIM_IDLE, FLIP_NONE, AS_FLAGS_DEFAULT);
+	// aSpriteInit(&demoSpr, &bmary_spr, AS_USE_SPRITEPOOL, 16, x, y, BMARY_SPR_ANIM_NEWFMT, FLIP_NONE, AS_FLAGS_DEFAULT);
 	aSpriteInit(&demoSpr2, &bmary_spr, AS_USE_SPRITEPOOL, 16, 160 - 16, y, BMARY_SPR_ANIM_IDLE, FLIP_NONE, AS_FLAGS_DEFAULT);
 	aSpriteInit(&demoSpr3, &bmary_spr, AS_USE_SPRITEPOOL, 16, 160 + 16, y, BMARY_SPR_ANIM_IDLE, FLIP_NONE, AS_FLAGS_DEFAULT);
 #ifdef LOTS
