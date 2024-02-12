@@ -53,7 +53,7 @@ typedef struct bkp_ram_info
 extern bkp_ram_info bkp_data;	// defined in linker file
 extern u32 _bend;
 
-u32 callBackCounter;
+volatile u32 callBackCounter;
 
 // fix palettes for text
 static const u16 fixPalettes[] = {
@@ -1211,12 +1211,13 @@ void colorStreamDemoB()
 
 void testCallBack()
 {
-	if (BIOS.P1.EDGE.A)
+	if (BIOS.P1.EDGE.B)
 		callBackCounter++;
 }
 
 #define CURSOR_MAX 7
 void (*const demos[])() = {pictureDemo, scrollerDemo, aSpriteDemo, fixDemo, rasterScrollDemo, desertRaster, colorStreamDemoA, colorStreamDemoB};
+extern u16 mess_menu[], *mess_menuMsgs[];
 
 // Improper USER usage in this simple test program, 
 //  see template project for correct usage.
@@ -1237,6 +1238,7 @@ void USER()
 	fixPrintf1(PRINTINFO(0, 2, 1, 3), "RAM usage: 0x%04x (%d)", ((u32)&_bend) - 0x100000, ((u32)&_bend) - 0x100000);
 	sprintf2(MAME_PRINT_BUFFER, "RAM usage: 0x%04x (%d)\n", ((u32)&_bend) - 0x100000, ((u32)&_bend) - 0x100000);
 	sprintf2(MAME_LOG_BUFFER, "RAM usage: 0x%04x (%d)\n", ((u32)&_bend) - 0x100000, ((u32)&_bend) - 0x100000);
+	addMessage(mess_menu);
 
 	while (1)
 	{
@@ -1252,20 +1254,11 @@ void USER()
 			demos[cursor]();
 			clearFixLayer();
 			backgroundColor = 0x7bbb; // restore BG color
+			addMessage(mess_menu);
 		}
 
 		fixPrintf1(PRINTINFO(0, 3, 1, 3), "CB counter:%d", callBackCounter);
-		fixPrint(PRINTINFO(8, 10, cursor == 0 ? 2 : 4, 3), "Picture demo");
-		fixPrint(PRINTINFO(8, 11, cursor == 1 ? 2 : 4, 3), "Scroller demo");
-		fixPrint(PRINTINFO(8, 12, cursor == 2 ? 2 : 4, 3), "Animated sprite demo");
-		fixPrint(PRINTINFO(8, 13, cursor == 3 ? 2 : 4, 3), "Fix layer demo");
-		fixPrint(PRINTINFO(8, 14, cursor == 4 ? 2 : 4, 3), "Raster demo A");
-		fixPrint(PRINTINFO(8, 15, cursor == 5 ? 2 : 4, 3), "Raster demo B");
-		fixPrint(PRINTINFO(8, 16, cursor == 6 ? 2 : 4, 3), "Color stream demo A");
-		fixPrint(PRINTINFO(8, 17, cursor == 7 ? 2 : 4, 3), "Color stream demo B");
-
-		fixPrint(PRINTINFO(8, 20, 4, 3), "(P1 START - Menu return)");
-		fixPrint(PRINTINFO(8, 28, 5, 3), "libNG tests - @2024 Hpman");
+		addMessage(mess_menuMsgs[cursor]);
 	}
 }
 

@@ -157,3 +157,108 @@ mess_logo98:
 		MESS_POS 23, 6
 		PRINTLOGO 0xd660, 12, 6
 		MESS_END
+
+
+
+;* main menu messages
+.globl mess_menu
+mess_menu:
+		MESS_FORMAT (_FMT_BYTE_DATA+_FMT_ENDCODE), 0x43ff
+		MESS_AUTOINC 0x20
+		MESS_POS 8, 20
+		MESS_PRINT "(P1 START - Menu return)"
+		MESS_FORMAT (_FMT_BYTE_DATA+_FMT_ENDCODE), 0x53ff
+		MESS_POS 8, 28
+		MESS_PRINT "libNG tests - @2024 Hpman"
+		MESS_END
+
+mess_menuItem0_msg:
+		MESS_POS 8, 10
+		MESS_PRINT "Picture demo"
+		MESS_RETURN
+mess_menuItem1_msg:
+		MESS_POS 8, 11
+		MESS_PRINT "Scroller demo"
+		MESS_RETURN
+mess_menuItem2_msg:
+		MESS_POS 8, 12
+		MESS_PRINT "Animated sprite demo"
+		MESS_RETURN
+mess_menuItem3_msg:
+		MESS_POS 8, 13
+		MESS_PRINT "Fix layer demo"
+		MESS_RETURN
+mess_menuItem4_msg:
+		MESS_POS 8, 14
+		MESS_PRINT "Raster demo A"
+		MESS_RETURN
+mess_menuItem5_msg:
+		MESS_POS 8, 15
+		MESS_PRINT "Raster demo B"
+		MESS_RETURN
+mess_menuItem6_msg:
+		MESS_POS 8, 16
+		MESS_PRINT "Color stream demo A"
+		MESS_RETURN
+mess_menuItem7_msg:
+		MESS_POS 8, 17
+		MESS_PRINT "Color stream demo B"
+		MESS_RETURN
+
+mess_menuBase:
+		MESS_AUTOINC 0x20
+		MESS_FORMAT (_FMT_BYTE_DATA+_FMT_ENDCODE), 0x43ff
+		MESS_CALL mess_menuItem0_msg
+		MESS_CALL mess_menuItem1_msg
+		MESS_CALL mess_menuItem2_msg
+		MESS_CALL mess_menuItem3_msg
+		MESS_CALL mess_menuItem4_msg
+		MESS_CALL mess_menuItem5_msg
+		MESS_CALL mess_menuItem6_msg
+		MESS_CALL mess_menuItem7_msg
+		MESS_RETURN
+
+.globl mess_menuMsgs
+mess_menuMsgs:
+	.long	mess_index0, mess_index1, mess_index2, mess_index3, mess_index4, mess_index5, mess_index6, mess_index7
+
+mess_index0:
+		MESS_CALL mess_menuBase
+		MESS_FORMAT (_FMT_BYTE_DATA+_FMT_ENDCODE), 0x23ff
+		MESS_CALL mess_menuItem0_msg
+		MESS_END
+mess_index1:
+		MESS_CALL mess_menuBase
+		MESS_FORMAT (_FMT_BYTE_DATA+_FMT_ENDCODE), 0x23ff
+		MESS_CALL mess_menuItem1_msg
+		MESS_END
+mess_index2:
+		MESS_CALL mess_menuBase
+		MESS_FORMAT (_FMT_BYTE_DATA+_FMT_ENDCODE), 0x23ff
+		MESS_CALL mess_menuItem2_msg
+		MESS_END
+mess_index3:
+		MESS_CALL mess_menuBase
+		MESS_FORMAT (_FMT_BYTE_DATA+_FMT_ENDCODE), 0x23ff
+		MESS_CALL mess_menuItem3_msg
+		MESS_END
+mess_index4:
+		MESS_CALL mess_menuBase
+		MESS_FORMAT (_FMT_BYTE_DATA+_FMT_ENDCODE), 0x23ff
+		MESS_CALL mess_menuItem4_msg
+		MESS_END
+mess_index5:
+		MESS_CALL mess_menuBase
+		MESS_FORMAT (_FMT_BYTE_DATA+_FMT_ENDCODE), 0x23ff
+		MESS_CALL mess_menuItem5_msg
+		MESS_END
+mess_index6:
+		MESS_CALL mess_menuBase
+		MESS_FORMAT (_FMT_BYTE_DATA+_FMT_ENDCODE), 0x23ff
+		MESS_CALL mess_menuItem6_msg
+		MESS_END
+mess_index7:
+		MESS_CALL mess_menuBase
+		MESS_FORMAT (_FMT_BYTE_DATA+_FMT_ENDCODE), 0x23ff
+		MESS_CALL mess_menuItem7_msg
+		MESS_END
