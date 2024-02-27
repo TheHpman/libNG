@@ -359,7 +359,7 @@ typedef struct NG_BIOS {
 	u8 TITLE_MODE;
 	u32 MESS_STACK[5];		/**< INTERNAL, MESS stack */
 	struct __padding_10feda {
-		u8 __pad_10feda;
+		u8 __pad_10feda[2];
 	};
 	ctrlDataS STATCURNT_RAW;	/**< Raw select/start inputs for controllers 1-4, positive logic */
 	ctrlDataS STATEDGE_RAW;		/**< Raw select/start positive edge inputs for controllers 1-4, positive logic */
