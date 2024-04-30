@@ -143,7 +143,8 @@ void scrollerDemo()
 	palJobPut(palIdx, ffbg_c.palInfo->count, ffbg_c.palInfo->data);
 	#endif
 
-	fixPrint(PRINTINFO(2, 3, 4, 3), "1P \x12\x13\x10\x11: scroll");
+	extern u16 mess_scrollDemo[];
+	addMessage(mess_scrollDemo);
 
 	SCClose();
 	while (1)

@@ -131,6 +131,22 @@ mess_aspriteDemo:
 		MESS_PRINT "2P \x12\x13\x10\x11: scale sprite"
 		MESS_END
 
+	.globl	mess_scrollDemo
+mess_scrollDemo:
+		MESS_FORMAT (_FMT_BYTE_DATA+_FMT_ENDCODE), 0x43ff
+		MESS_AUTOINC 0x20
+		MESS_POS 2, 3
+		MESS_PRINT "1P \x12\x13\x10\x11: scroll"
+		MESS_POS 20, 3
+		MESS_PRINT "2P: color math"
+		MESS_POS 20, 4
+		MESS_PRINT "A/B/C: RGB comp."
+		MESS_POS 20, 5
+		MESS_PRINT "\x12/\x13: fade out/in"
+		MESS_POS 20, 6
+		MESS_PRINT "\x10/\x11: set/reset"
+		MESS_END
+
 _submess_blankLine:
 		MESS_PRINT "                                       "	;* minus 1 to keep job meter
 		MESS_RETURN
@@ -278,3 +294,4 @@ mess_index7:
 		MESS_FORMAT (_FMT_BYTE_DATA+_FMT_ENDCODE), 0x23ff
 		MESS_CALL mess_menuItem7_msg
 		MESS_END
+
