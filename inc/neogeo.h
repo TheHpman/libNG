@@ -11,10 +11,6 @@
 
 #include <types.h>
 #include <configNG.h>
-#include <libNG.h>
-#include <libNG_spr.h>
-#include <libNG_scrl.h>
-#include <libNG_pict.h>
 
 #ifdef _MSC_VER
 #define __attribute__(a) /* Visual Studio fix */
@@ -302,23 +298,23 @@ typedef struct NG_BIOS {
 	u8 USER_MODE;			/**< Current user mode (USER_MODE_INIT_BOOT/USER_MODE_TITLE_DEMO/USER_MODE_GAME) */
 	PQUAD CREDIT_DEC;		/**< Credit decrement values for CREDIT_DOWN, BCD format */
 	u8 START_FLAG;			/**< Start flags for PLAYER_START */
-	struct __padding_10fdb5 {
+	struct {
 		u8 __pad_10fdb5;
 	};
 	PQUAD PLAYER_MODE;		/**< Player 1-4 statuses (PLAYER_MODE_NEVER_PLAYED/PLAYER_MODE_PLAYING/PLAYER_MODE_CONTINUE/PLAYER_MODE_GAMEOVER) */
-	struct __padding_10fdba {
+	struct {
 		u8 __pad_10fdba[4];	// INTERNAL, last frame PLAYER_MODE
 	};
 	u32 *MESS_POINT;
 	u8 MESS_BUSY;
-	struct __padding_10fdc3 {
+	struct {
 		u8 __pad_10fdc3;
 	};
 	struct {
 		u8 COMMAND;		/**< CARD command */
 		u8 MODE;		/**< INTERNAL ? */
 		u8 ANSWER;		/**< CARD return code */
-		struct _paddingCard {
+		struct {
 			u8 _padCard;
 		};
 		u32 START;		/**< CARD data pointer */
@@ -337,49 +333,49 @@ typedef struct NG_BIOS {
 		u8 HOUR;		/**< Current hour(MVS) */
 		u8 MINUTE;		/**< Current minute (MVS) */
 		u8 SECOND;		/**< Current second (MVS) */
-		struct _paddingDate {
+		struct {
 			u8 _padDate;
 		};
 	} DATE;				/**< Current date (MVS) */
 	u8 COMPULSION_TIMER;		/**< Compultion timer (BCD format) */
 	u8 COMPULSION_FRAME;		/**< INTERNAL, compultion timer frame counter */
-	struct __padding_10fddc {
+	struct {
 		u8 __pad_10fddc[0x24];
 	};
 	PQUAD CREDITS;			/**< Debug credits */
-	struct __padding_10fe04 {
+	struct {
 		u8 __pad_10fe04[0x7c];
 	};
 	u8 DEVMODE[8];			/**< Developer mode (8 bytes, 0=normal / '1streset'=dev mode) */
 	u32 FRAME_COUNTER;		/**< Bios frame counter */
 	u8 SYS_STOPPER;			/**< INTERNAL? */
-	struct __padding_10fe8d {
+	struct {
 		u8 __pad_10fe8d[0x38];
 	};
-	u8 TITLE_MODE;
+	u8 TITLE_MODE__;
 	u32 MESS_STACK[5];		/**< INTERNAL, MESS stack */
-	struct __padding_10feda {
+	struct {
 		u8 __pad_10feda[2];
 	};
 	ctrlDataS STATCURNT_RAW;	/**< Raw select/start inputs for controllers 1-4, positive logic */
 	ctrlDataS STATEDGE_RAW;		/**< Raw select/start positive edge inputs for controllers 1-4, positive logic */
-	struct __padding_10fede {
+	struct {
 		u8 __pad_10fede[0xa];
 	};
 	NGCTRL P5;			/**< P5 controller data */
 	NGCTRL P6;			/**< P6 controller data */
-	struct __padding_10fef4 {
+	struct {
 		u8 __pad_10fef4[4];
 	};
 	struct {
 		u8 REQUESTED;		/**< INTERNAL, 4P mode requested flag */
-		struct __padding_10fef9 {
+		struct {
 			u8 __pad_10fef9;
 		};
 		u8 ENABLED;		/**< 4P mode enabled flag */
 		u8 FOUND_BOARD;		/**< 4P board found flag */
 	} MODE_4P;			/**< 4P mode data */
-	struct __padding_10fefc {
+	struct {
 		u8 __pad_10fefc[4];
 	};
 	u32 MESS_BUFFER[64];		/**< MESS buffer pointers */
@@ -406,5 +402,12 @@ typedef struct _PALRAM {
 #define	CAB_CREDITS_P1		(*(vu8*)0xd00034)	/**< Cab credits count, P1, BCD format */
 #define	CAB_CREDITS_P2		(*(vu8*)0xd00035)	/**< Cab credits count, P2, BCD format */
 #define	CAB_SOUND_STOP		(*(vu8*)0xd00046)	/**< Cab sound stop flag */
+
+
+#include <libNG.h>
+#include <libNG_spr.h>
+#include <libNG_scrl.h>
+#include <libNG_pict.h>
+#include <libNG_cMath.h>
 
 #endif // __NEOGEO_H__

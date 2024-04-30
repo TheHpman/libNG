@@ -20,40 +20,50 @@ spritePoolInit:
 	.set	_size, _ARGS+8+2	;* word
 	.set	_clear, _ARGS+12+2	;* word
 
-		move.l	_pool(sp), a0					;*a0=sp				16
-		move.w	_baseSprite(sp), d0				;*d0=baseSprite
-		move.w	_size(sp), d1					;*d1=poolSize
+		move.l	_pool(sp), a0					;* a0=sp
+		move.w	_baseSprite(sp), d0				;* d0=baseSprite
+		move.w	_size(sp), d1					;* d1=poolSize
 
-		move.w	d0, SPOOL_POOLSTART(a0)				;*sp->poolStart=baseSprite
-		move.w	d0, SPOOL_CURRENTUP(a0)				;*sp->currentUp=baseSprite
-		move.w	d1, SPOOL_POOLSIZE(a0)				;*sp->poolSize=poolSize
-		move.w	#WAY_UP, SPOOL_WAY(a0)				;*sp->way=WAY_UP
-		add.w	d1, d0						;*baseSprite+poolSize
-		subq.w	#1, d0						;*-1
-		move.w	d0, SPOOL_POOLEND(a0)				;*sp->poolEnd=
-		move.w	d0, SPOOL_CURRENTDOWN(a0)			;*sp->currentDown=
+		move.w	d0, SPOOL_POOLSTART(a0)				;* sp->poolStart=baseSprite
+		move.w	d0, SPOOL_CURRENTUP(a0)				;* sp->currentUp=baseSprite
+		move.w	d1, SPOOL_POOLSIZE(a0)				;* sp->poolSize=poolSize
+		move.w	#WAY_UP, SPOOL_WAY(a0)				;* sp->way=WAY_UP
+		subq.w	#1, d1						;* -1
+		add.w	d1, d0						;* baseSprite+poolSize
+		move.w	d0, SPOOL_POOLEND(a0)				;* sp->poolEnd=
+		move.w	d0, SPOOL_CURRENTDOWN(a0)			;* sp->currentDown=
 
-		;*  clear sprites
+		;* must clear last tile to avoid clear overflow when scaling
+		moveq	#0, d0
+		move.w	_baseSprite(sp), d0
+		lsl.w	#6, d0						;* spr addr
+		add.w	#62, d0
+		swap	d0						;* last tile addr + 0 data
+
+		move.l	SC234ptr, a0					;* a0=buffer ptr
+		move.l	#0x400000, a1
+
+0:		move.l	d0, (a0)+					;* buffer write
+		add.l	a1, d0						;* spr++
+		dbra	d1, 0b						;* tile clear loop
+
+		;* clear sprites
 		tst.w	_clear(sp)					;* clear sprites?
 		beq.s	9f						;*
-		move.l	#0x88008200, d0					;*data, addr			12
+
+		move.l	#0x88008200, d0					;* data, addr
 		add.w	_baseSprite(sp), d0				;*
-		swap	d0						;*d0=addr/data
+		swap	d0						;* d0=addr/data
+		move.l	#0x10000, a1					;* a1=next spr mod
+		move.w	_size(sp), d1
+		subq.w	#1, d1						;* d1=loop
 
-		movea.l	SC234ptr, a0					;*a0=queue ptr			20
-		move.l	#0x10000, a1					;*a1=next spr mod		12		swap+12
-		subq.w	#1, d1						;*d1=loop			4
+0:		move.l	d0, (a0)+					;* buffer write
+		add.l	a1, d0						;* spr++
+		dbra	d1, 0b						;* clear loop
 
-		move.l	d0, (a0)+					;*queue				12
-		dbra	d1, 0f						;*loop				10 taken, 14 not
-		move.l	a0, SC234ptr					;*update ptr			20
+9:		move.l	a0, SC234ptr					;* save ptr
 		rts
-
-0:		add.l	a1, d0						;*next spr			8		swap+4
-		move.l	d0, (a0)+					;*queue				12
-		dbra	d1, 0b						;*loop				10 taken, 14 not
-		move.l	a0, SC234ptr					;*update ptr			20
-9:		rts
 
 
 ;*/******************************************************************************
@@ -67,12 +77,11 @@ spritePoolClose:
 	.set	_ARGS, 4
 	.set	_pool, _ARGS		;* long
 
-		move.l	_pool(sp), a0					;*a0=sp				16
-		tst.w	SPOOL_WAY(a0)					;*
+		move.l	_pool(sp), a0					;* a0=sp			16
+		bchg.b	#0, SPOOL_WAY+1(a0)				;* test & switch pool direction
 		bne.s	5f						;*
 
 		;* WAY_UP
-		move.w	#WAY_DOWN, SPOOL_WAY(a0)			;* sp->way=WAY_DOWN
 		move.w	SPOOL_POOLEND(a0), d1
 		move.w	d1, SPOOL_CURRENTDOWN(a0)			;* sp->currentDown=sp->poolEnd;
 
@@ -82,8 +91,7 @@ spritePoolClose:
 1:		rts
 
 		;* WAY_DOWN
-5:		move.w	#WAY_UP, SPOOL_WAY(a0)				;* sp->way=WAY_UP
-		move.w	SPOOL_POOLSTART(a0), d0
+5:		move.w	SPOOL_POOLSTART(a0), d0
 		move.w	d0, SPOOL_CURRENTUP(a0)				;* sp->currentUp=sp->poolStart;
 
 		move.w	d0, d1
@@ -568,16 +576,16 @@ drawUnscaledPattern_IRQsafe:
 
 		jmp	(a2)						;* write sprite
 
-_LONGWRITE_SIZE	=	14
-LW_tble:
-	.long	writeBaseUnscaledIRQsafe-(_LONGWRITE_SIZE*1), writeBaseUnscaledIRQsafe-(_LONGWRITE_SIZE*2), writeBaseUnscaledIRQsafe-(_LONGWRITE_SIZE*3), writeBaseUnscaledIRQsafe-(_LONGWRITE_SIZE*4)
-	.long	writeBaseUnscaledIRQsafe-(_LONGWRITE_SIZE*5), writeBaseUnscaledIRQsafe-(_LONGWRITE_SIZE*6), writeBaseUnscaledIRQsafe-(_LONGWRITE_SIZE*7), writeBaseUnscaledIRQsafe-(_LONGWRITE_SIZE*8)
-	.long	writeBaseUnscaledIRQsafe-(_LONGWRITE_SIZE*9), writeBaseUnscaledIRQsafe-(_LONGWRITE_SIZE*10), writeBaseUnscaledIRQsafe-(_LONGWRITE_SIZE*11), writeBaseUnscaledIRQsafe-(_LONGWRITE_SIZE*12)
-	.long	writeBaseUnscaledIRQsafe-(_LONGWRITE_SIZE*13), writeBaseUnscaledIRQsafe-(_LONGWRITE_SIZE*14), writeBaseUnscaledIRQsafe-(_LONGWRITE_SIZE*15), writeBaseUnscaledIRQsafe-(_LONGWRITE_SIZE*16)
-	.long	writeBaseUnscaledIRQsafe-(_LONGWRITE_SIZE*17), writeBaseUnscaledIRQsafe-(_LONGWRITE_SIZE*18), writeBaseUnscaledIRQsafe-(_LONGWRITE_SIZE*19), writeBaseUnscaledIRQsafe-(_LONGWRITE_SIZE*20)
-	.long	writeBaseUnscaledIRQsafe-(_LONGWRITE_SIZE*21), writeBaseUnscaledIRQsafe-(_LONGWRITE_SIZE*22), writeBaseUnscaledIRQsafe-(_LONGWRITE_SIZE*23), writeBaseUnscaledIRQsafe-(_LONGWRITE_SIZE*24)
-	.long	writeBaseUnscaledIRQsafe-(_LONGWRITE_SIZE*25), writeBaseUnscaledIRQsafe-(_LONGWRITE_SIZE*26), writeBaseUnscaledIRQsafe-(_LONGWRITE_SIZE*27), writeBaseUnscaledIRQsafe-(_LONGWRITE_SIZE*28)
-	.long	writeBaseUnscaledIRQsafe-(_LONGWRITE_SIZE*29), writeBaseUnscaledIRQsafe-(_LONGWRITE_SIZE*30), writeBaseUnscaledIRQsafe-(_LONGWRITE_SIZE*31), writeBaseUnscaledIRQsafe-(_LONGWRITE_SIZE*32)
+;* _LONGWRITE_SIZE	=	14
+;* LW_tble:
+;* 	.long	writeBaseUnscaledIRQsafe-(_LONGWRITE_SIZE*1), writeBaseUnscaledIRQsafe-(_LONGWRITE_SIZE*2), writeBaseUnscaledIRQsafe-(_LONGWRITE_SIZE*3), writeBaseUnscaledIRQsafe-(_LONGWRITE_SIZE*4)
+;* 	.long	writeBaseUnscaledIRQsafe-(_LONGWRITE_SIZE*5), writeBaseUnscaledIRQsafe-(_LONGWRITE_SIZE*6), writeBaseUnscaledIRQsafe-(_LONGWRITE_SIZE*7), writeBaseUnscaledIRQsafe-(_LONGWRITE_SIZE*8)
+;* 	.long	writeBaseUnscaledIRQsafe-(_LONGWRITE_SIZE*9), writeBaseUnscaledIRQsafe-(_LONGWRITE_SIZE*10), writeBaseUnscaledIRQsafe-(_LONGWRITE_SIZE*11), writeBaseUnscaledIRQsafe-(_LONGWRITE_SIZE*12)
+;* 	.long	writeBaseUnscaledIRQsafe-(_LONGWRITE_SIZE*13), writeBaseUnscaledIRQsafe-(_LONGWRITE_SIZE*14), writeBaseUnscaledIRQsafe-(_LONGWRITE_SIZE*15), writeBaseUnscaledIRQsafe-(_LONGWRITE_SIZE*16)
+;* 	.long	writeBaseUnscaledIRQsafe-(_LONGWRITE_SIZE*17), writeBaseUnscaledIRQsafe-(_LONGWRITE_SIZE*18), writeBaseUnscaledIRQsafe-(_LONGWRITE_SIZE*19), writeBaseUnscaledIRQsafe-(_LONGWRITE_SIZE*20)
+;* 	.long	writeBaseUnscaledIRQsafe-(_LONGWRITE_SIZE*21), writeBaseUnscaledIRQsafe-(_LONGWRITE_SIZE*22), writeBaseUnscaledIRQsafe-(_LONGWRITE_SIZE*23), writeBaseUnscaledIRQsafe-(_LONGWRITE_SIZE*24)
+;* 	.long	writeBaseUnscaledIRQsafe-(_LONGWRITE_SIZE*25), writeBaseUnscaledIRQsafe-(_LONGWRITE_SIZE*26), writeBaseUnscaledIRQsafe-(_LONGWRITE_SIZE*27), writeBaseUnscaledIRQsafe-(_LONGWRITE_SIZE*28)
+;* 	.long	writeBaseUnscaledIRQsafe-(_LONGWRITE_SIZE*29), writeBaseUnscaledIRQsafe-(_LONGWRITE_SIZE*30), writeBaseUnscaledIRQsafe-(_LONGWRITE_SIZE*31), writeBaseUnscaledIRQsafe-(_LONGWRITE_SIZE*32)
 
 ;* 14 bytes / 60 cy
 	.macro	_LONGWRITE_TILE_

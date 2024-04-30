@@ -43,8 +43,10 @@
 	.endm
 
 	;*8
+	;* 8*16 print
 
 	;*9
+	;* 8*16 JP print
 
 	.macro	MESS_CALL addr
 	.word	0xa
@@ -84,7 +86,7 @@ mess_colorStreamDemoA:
 		MESS_FORMAT (_FMT_BYTE_DATA+_FMT_ENDCODE), 0x43ff
 		MESS_AUTOINC 0x20
 		MESS_POS 2, 3
-		MESS_PRINT "1P \x10\x11: scroll"
+		MESS_PRINT "1P \x10\x11: scroll (hold A: faster)"
 		MESS_END
 
 	.globl	mess_colorStreamDemoB
@@ -92,7 +94,7 @@ mess_colorStreamDemoB:
 		MESS_FORMAT (_FMT_BYTE_DATA+_FMT_ENDCODE), 0x43ff
 		MESS_AUTOINC 0x20
 		MESS_POS 2, 3
-		MESS_PRINT "1P \x12\x13: scroll"
+		MESS_PRINT "1P \x12\x13: scroll (hold A: frame scroll)"
 		MESS_FORMAT (_FMT_BYTE_DATA+_FMT_ENDCODE), 0x63ff
 		MESS_POS 2, 29
 		MESS_PRINT "(Sequence formatted by MegaShocked)"
@@ -113,6 +115,20 @@ mess_rasterScrollDemo:
 		MESS_PRINT "1P A+\x12\x13: Adjust timer (line)"
 		MESS_POS 2, 5
 		MESS_PRINT "1P A+\x10\x11: Adjust timer (unit)"
+		MESS_END
+
+	.globl	mess_aspriteDemo
+mess_aspriteDemo:
+		MESS_FORMAT (_FMT_BYTE_DATA+_FMT_ENDCODE), 0x43ff
+		MESS_AUTOINC 0x20
+		MESS_POS 2, 3
+		MESS_PRINT "1P \x12\x13\x10\x11: move sprite"
+		MESS_POS 2, 4
+		MESS_PRINT "1P A+\x12\x13\x10\x11: flip mode"
+		MESS_POS 2, 5
+		MESS_PRINT "1P B/C/D: toggle anim/anchor/debug"
+		MESS_POS 2, 6
+		MESS_PRINT "2P \x12\x13\x10\x11: scale sprite"
 		MESS_END
 
 _submess_blankLine:

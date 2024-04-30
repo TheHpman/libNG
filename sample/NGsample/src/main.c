@@ -117,18 +117,31 @@ void scrollerDemo()
 	scrollerInit(&backScroll, &ffbg_a, 1, palIdx, (((x - 8) * 141) / 299) + BACK_MIN_X, (((y - 16) * 3) / 8) + BACK_MIN_Y);
 	// setBank(&ffbg_a);
 	// this section valid because scrollerInit did the banking for us
+	#if COLORMATH_ENABLE
+	cMathLoadPalette(palIdx, ffbg_a.palInfo->count, FADE_RESET, ffbg_a.palInfo->data);
+	#else
 	palJobPut(palIdx, ffbg_a.palInfo->count, ffbg_a.palInfo->data);
+	#endif
 	palIdx += ffbg_a.palInfo->count;
 
 	scrollerInit(&frontScroll, &ffbg_b, 22, palIdx, x, y);
 	// scrollerInitClipped(&frontScroll, &ffbg_b, 22, palIdx, x, y, CLIPPING);
 	// setBank(&ffbg_b);
+	#if COLORMATH_ENABLE
+	cMathLoadPalette(palIdx, ffbg_b.palInfo->count, FADE_RESET, ffbg_b.palInfo->data);
+	#else
 	palJobPut(palIdx, ffbg_b.palInfo->count, ffbg_b.palInfo->data);
+	#endif
 	palIdx += ffbg_b.palInfo->count;
 
 	pictureInit(&car, &ffbg_c, 43, palIdx, carx, cary, FLIP_NONE);
 	// setBank(&ffbg_c);
+	#if COLORMATH_ENABLE
+	cMathLoadPalette(palIdx, ffbg_c.palInfo->count, FADE_RESET, ffbg_c.palInfo->data);
+	u16 palcount = palIdx - 16 + 1;
+	#else
 	palJobPut(palIdx, ffbg_c.palInfo->count, ffbg_c.palInfo->data);
+	#endif
 
 	fixPrint(PRINTINFO(2, 3, 4, 3), "1P \x12\x13\x10\x11: scroll");
 
@@ -142,8 +155,26 @@ void scrollerDemo()
 			; // (debug) wait raster line 16
 		jobMeterColor = NGCOLOR_PURPLE;
 
+		#if COLORMATH_ENABLE
+		u16 palComps =	(BIOS.P2.CURRENT.A ? FADE_RED : 0) |
+				(BIOS.P2.CURRENT.B ? FADE_GREEN : 0) |
+				(BIOS.P2.CURRENT.C ? FADE_BLUE : 0);
+		if(BIOS.P2.EDGE.UP)
+			cMathSetCommand(16, palcount, (FADE_TO | palComps | FADE_SPEED2));
+		else if(BIOS.P2.EDGE.DOWN)
+			cMathSetCommand(16, palcount, (FADE_FROM | palComps | FADE_SPEED2));
+		else if(BIOS.P2.EDGE.LEFT)
+			cMathSetCommand(16, palcount, (FADE_FILL | palComps));
+		else if(BIOS.P2.EDGE.RIGHT)
+			cMathSetCommand(16, palcount, FADE_RESET);
+
+		if(BIOS.P2.EDGE.D)
+			cMathSetCommand(16, palcount, FADE_RESET);
+		#endif	//COLORMATH_ENABLE
+
 		if (BIOS.START_EDGE.P1_START)
 		{
+			setBank(&ffbg_c);
 			clearSprites(1, 42 + ffbg_c.tileWidth);
 			SCClose();
 			waitVBlank();
@@ -246,6 +277,9 @@ void aSpriteDemo()
 	backgroundColor = 0x7bbb;
 	jobMeterSetup(TRUE);
 
+	extern u16 mess_aspriteDemo[];
+	addMessage(mess_aspriteDemo);
+
 #ifdef POOL_MODE
 	aSpriteInit(&demoSpr, &bmary_spr, AS_USE_SPRITEPOOL, 16, x, y, BMARY_SPR_ANIM_IDLE, FLIP_NONE, AS_FLAGS_DEFAULT);
 	// aSpriteInit(&demoSpr, &bmary_spr, AS_USE_SPRITEPOOL, 16, x, y, BMARY_SPR_ANIM_NEWFMT, FLIP_NONE, AS_FLAGS_DEFAULT);
@@ -290,11 +324,6 @@ void aSpriteDemo()
 	SC234Put(VRAM_POSY_ADDR(204), VRAM_POSY(224, SPR_UNSTICK, 0));
 	SC234Put(VRAM_SPR_ADDR(204), data[40 << 1]);
 	SC234Put(VRAM_SPR_ADDR(204) + 1, (200 << 8) | FLIP_XY);
-
-	fixPrint(PRINTINFO(2, 3, 4, 3), "1P \x12\x13\x10\x11: move sprite");
-	fixPrint(PRINTINFO(2, 4, 4, 3), "1P A+\x12\x13\x10\x11: flip mode");
-	fixPrint(PRINTINFO(2, 5, 4, 3), "1P B/C/D: toggle animation");
-	fixPrint(PRINTINFO(12, 6, 4, 3), "/coords mode/debug");
 
 #ifdef POOL_MODE
 	// spritePoolInit(&testPool, 10, 60 /*50*/ /*80*/, TRUE);
@@ -343,8 +372,7 @@ void aSpriteDemo()
 
 		if (BIOS.START_CURRENT.P1_START)
 		{
-			clearSprites(1, 150);
-			clearSprites(200, 5);
+			clearSprites(1, 210);
 			// restoring shrink values
 			for (u16 x = 0x8000 + 1; x <= 0x8000 + 384; x++)
 			{
@@ -548,7 +576,7 @@ void aSpriteDemo()
 	}
 }
 
-const char sinTable[] = {32, 34, 35, 37, 38, 40, 41, 43, 44, 46, 47, 48, 50, 51, 52, 53,
+const u8 sinTable[] = {32, 34, 35, 37, 38, 40, 41, 43, 44, 46, 47, 48, 50, 51, 52, 53,
 			 55, 56, 57, 58, 59, 59, 60, 61, 62, 62, 63, 63, 63, 64, 64, 64,
 			 64, 64, 64, 64, 63, 63, 63, 62, 62, 61, 60, 59, 59, 58, 57, 56,
 			 55, 53, 52, 51, 50, 48, 47, 46, 44, 43, 41, 40, 38, 37, 35, 34,
@@ -1231,15 +1259,15 @@ void USER()
 	palJobPut(0, 8, fixPalettes);
 	backgroundColor = 0x7bbb;
 
-	// using VBL callbacks to count global A button presses
+	// using VBL callbacks to count global B button presses
 	VBL_callBack = testCallBack;
 	VBL_skipCallBack = testCallBack;
 
 	fixPrintf1(PRINTINFO(0, 2, 1, 3), "RAM usage: 0x%04x (%d)", ((u32)&_bend) - 0x100000, ((u32)&_bend) - 0x100000);
+	// debug print to mame
 	sprintf2(MAME_PRINT_BUFFER, "RAM usage: 0x%04x (%d)\n", ((u32)&_bend) - 0x100000, ((u32)&_bend) - 0x100000);
-	sprintf2(MAME_LOG_BUFFER, "RAM usage: 0x%04x (%d)\n", ((u32)&_bend) - 0x100000, ((u32)&_bend) - 0x100000);
-	addMessage(mess_menu);
 
+	addMessage(mess_menu);
 	while (1)
 	{
 		SCClose();

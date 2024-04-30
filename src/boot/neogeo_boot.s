@@ -136,8 +136,8 @@ PRE_USER:
 		moveq	#0, d0
 		lea	_bstart, a0	;* bss start
 		move.l	#__stack, d1
-		sub.l	a0, d1		; *clear size
-		beq.s	9f
+		sub.l	a0, d1		;* clear size
+		beq.s	9f		;* this won't end well...
 
 		;* odd start?
 		move.l	a0, d2
@@ -184,13 +184,13 @@ PRE_USER:
 		move.l	d0, TInextTable
 		move.l	#_dummyTIdata, TIcurrentData	;* sets up dummy data
 
-		;* Flush interrupts
-		move.b	#7, REG_IRQACK
-
 		;* for CD only
 	.if	_SYSTEM_NCD
 		bset	#7, BIOS_SYSTEM_MODE
 	.endif
+
+		;* Flush interrupts
+		move.b	#7, REG_IRQACK
 
 		;* Enable interrupts
 		move.w	#0x2000, sr

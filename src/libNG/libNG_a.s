@@ -4,6 +4,12 @@
 
 	.set	_METER_COLOR, (PAL_RAM+(((JOB_METER_PALETTE*16)+JOB_METER_COLOR)*2))
 
+#if	COLORMATH_ENABLE
+.globl	palFlushOnFrameSkip
+.globl	cMathFlushBlocks
+.globl	cMathTickCommands
+#endif
+
 ;*VRAM format:
 ;*
 ;* 	0x0000
@@ -28,6 +34,117 @@
 ;* 	0x8400
 ;* 	fedcba987	6543210
 ;* 	posX		xxxxxxx
+
+
+;* ******************************************************************************
+;* 				waitVBlank()
+;* ******************************************************************************
+.globl	waitVBlank
+.globl	libNG_vbl_flag
+
+waitVBlank:
+	#if	SOUNDBUFFER_ENABLE
+	#if	SOUNDBUFFER_DISPATCH_TWICE
+		bsr.s	sndDispatch					;* optional additional dispatch
+	#endif
+	#endif
+	#if	COLORMATH_ENABLE
+		tst.b	BIOS_DEVMODE					;* dev mode?
+		beq.s	0f						;*
+		move.l	0x10e.w, a0					;* backup ram ptr
+		btst	#0, (1,a0)					;* dip 2-1 ?
+		beq.s	0f
+		move.w	#0x30ff, _METER_COLOR				;* NGCOLOR_CYAN
+		jsr	cMathTickCommands
+		move.w	#0x20f0, _METER_COLOR				;* NGCOLOR_GREEN
+		bra.s	5f
+
+0:		jsr	cMathTickCommands
+	#endif
+5:		move.b	libNG_drawListReady+1, libNG_drawListReady
+		clr.b	libNG_vbl_flag
+0:		tst.b	libNG_vbl_flag
+		beq.s	0b
+	#if	SOUNDBUFFER_ENABLE
+		bra.s	sndDispatch					;* main dispatch command
+	#endif
+		rts
+
+
+#if	SOUNDBUFFER_ENABLE
+.globl	sndBuffer
+.globl	sndBufferIndexRW
+.set	SND_IDX_MASK, (SOUNDBUFFER_SIZE-1)&0xff
+;* ******************************************************************************
+;* 				sndReset(bool sendResetCode)
+;* ******************************************************************************
+.globl	sndReset
+	.set	_ARGS, 4
+	.set	_sendCode, _ARGS+3	;* byte
+sndReset:
+		tst.b	_sendCode(sp)
+		beq.s	0f
+		move.b	#3, REG_SOUND		;* send reset command
+
+0:		clr.w	sndBufferIndexRW
+		rts
+
+
+;* ******************************************************************************
+;* 				sndDispatch()
+;* ******************************************************************************
+.globl	sndDispatch
+sndDispatch:
+		;* check for data in buffer
+		moveq	#0, d0
+	;*	move.b	sndBufferIndexRW, d0
+	;*	cmp.b	sndBufferIndexRW+1, d0	;* ring buffer empty?
+		lea	sndBufferIndexRW, a0
+		move.b	(a0)+, d0		;* R index
+		cmp.b	(a0), d0		;* ring buffer empty?
+		beq.s	9f
+
+		;* send code
+		lea	sndBuffer, a1
+		move.b	(a1,d0.w), REG_SOUND
+
+		;* update read index
+		addq.b	#1, d0
+		and.b	#SND_IDX_MASK, d0
+	;*	move.b	d0, sndBufferIndexRW
+		move.b	d0, -(a0)
+
+9:		rts
+
+
+;* ******************************************************************************
+;* 				sndAddCode(u8 code)
+;* ******************************************************************************
+.globl	sndAddCode
+	.set	_ARGS, 4
+	.set	_code, _ARGS+3	;* byte
+sndAddCode:
+		;* write code
+		moveq	#0, d0
+	;*	move.b	sndBufferIndexRW+1, d0
+		lea	sndBufferIndexRW+1, a0
+		move.b	(a0), d0
+		lea	sndBuffer, a1
+		move.b	_code(sp), (a1,d0.w)
+
+		;* update index
+		addq.b	#1, d0
+		and.b	SND_IDX_MASK, d0
+	;*	cmp.b	sndBufferIndexRW, d0	;* ring buffer full?
+		cmp.b	-1(a0), d0
+		beq.s	9f
+	;*	move.b	d0, sndBufferIndexRW+1
+		move.b	d0, (a0)
+
+9:		rts
+
+;* SOUNDBUFFER_ENABLE
+#endif
 
 
 ;* ******************************************************************************
@@ -75,7 +192,6 @@ addMessage:
 		move.l	a0, (a1)+		;* write back buffer ptr
 		subq.b	#1, (a1)		;* busy--
 		rts
-
 
 
 ;* ******************************************************************************
@@ -515,7 +631,7 @@ libNG_vblankTI:								;*		irq rising =	26~44
 		bpl.s	TI_splash_screen				;*				8 not taken, 10 taken
 		movem.l	d0-d7/a0-a6, -(sp)				;*				128
 
-		tst.w	libNG_drawListReady				;* draw list rdy?		16
+		tst.b	libNG_drawListReady				;* draw list rdy?		16
 		bne.s	newData						;* nope? use old data		10 taken, 8 if not
 
 oldData:	;* retain current data - this will preserve raster when frame skipping
@@ -575,7 +691,15 @@ dataReady:
 splash_screen:
 		jmp	SYSTEM_INT1					;* bios splash screen
 frameskip:
-		add.l	#1, libNG_droppedFrames
+	#if	FRAMESKIP_KICK_DOG
+		move.b	d0, REG_WATCHDOG
+	#endif
+	#if	COLORMATH_ENABLE
+		tst.b	palFlushOnFrameSkip
+		beq.s	0f
+		jsr	cMathFlushBlocks
+	#endif
+0:		add.l	#1, libNG_droppedFrames
 		jsr	SYSTEM_IO
 		move.l	VBL_skipCallBack, a0
 		bra.w	VBL_end						;*				10
@@ -588,7 +712,7 @@ libNG_vblank:
 
 		;* user control
 libNG_vblank_fromTI:
-		tst.w	libNG_drawListReady				;* draw list rdy?		16
+		tst.b	libNG_drawListReady				;* draw list rdy?		16
 		beq.s	frameskip					;* is 0, nope, not ready to draw!! frame skipping!! ohnoez!!	//10 taken, 8 if not
 
 		tst.b	BIOS_DEVMODE					;* dev mode?			16
@@ -597,8 +721,16 @@ libNG_vblank_fromTI:
 		btst	#0, (1, a4)					;* dip 2-1 ?
 		beq.s	0f
 		move.w	#0x4f00, _METER_COLOR				;* JOB_RED			20
+0:
 
-0:		lea	REG_VRAM_ADDR, a5				;* a0=vram addr			12
+		;*** flush color math buffer **************
+	#if	COLORMATH_ENABLE
+		jsr	cMathFlushBlocks
+	#endif
+		;******************************************
+
+
+		lea	REG_VRAM_ADDR, a5				;* a0=vram addr			12
 		lea	2(a5), a6					;* a6=vram RW			8
 		move.w	#1, 2(a6) 					;* vram modulo			16
 
@@ -754,10 +886,10 @@ debug_return:	;* we done, resetting drawlists
 		move.w	#0x20f0, _METER_COLOR				;* JOB_GREEN			20
 
 0:		move.l	VBL_callBack, a0
-VBL_end:
-		move.w	#1, libNG_vbl_flag				;* Vblank flag			20
-		move.w	#4, REG_IRQACK					;* IRQ ack			20
 		move.b	d0, REG_WATCHDOG				;*				16
+
+VBL_end:	move.b	#1, libNG_vbl_flag				;* Vblank flag			20
+		move.w	#4, REG_IRQACK					;* IRQ ack			20
 
 		move.l	a0, d0
 		beq.s	0f						;* valid callback ?

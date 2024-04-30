@@ -1,5 +1,4 @@
-#include <types.h>
-#include <libNG.h>
+#include <neogeo.h>
 
 
 /******************************************************************/
@@ -13,7 +12,7 @@
 	VARIABLES
 **************************************/
 // vblank / frame counters
-u16	libNG_vbl_flag;		// internal
+u8	libNG_vbl_flag;		// internal
 vu32	libNG_droppedFrames;	// dropped frames
 vu32	libNG_frameCounter;	//"real" frame count
 void	*VBL_callBack;
@@ -47,22 +46,26 @@ char	libNG_scratchpad64[64];
 char	libNG_scratchpad16[16];
 // 80 bytes
 
+// buffers for color math
+#if COLORMATH_ENABLE
+palette palBuffer[256];
+palHandle palHandles[256];
+u8 palTransferPending;
+u8 palCommandPending;
+u8 palFlushOnFrameSkip;
+#endif
+// ~9.5KB
+
+#if SOUNDBUFFER_ENABLE
+u8 sndBuffer[SOUNDBUFFER_SIZE];	// ring buffer
+u16 sndBufferIndexRW;		// R & W indexes packed as u16
+#endif
+
 /**************************************
 	FUNCTIONS
 **************************************/
 
 /****** base video stuff ******/
-void waitVBlank()
-{
-	__asm__(
-	    "clr.w %0 \n"
-	    "0: \n"
-	    "tst.w %0 \n"
-	    "beq.s 0b \n"
-	    :"+m"(libNG_vbl_flag)
-	    ::"memory","cc");
-}
-
 void disableIRQ()
 {
 	__asm__(

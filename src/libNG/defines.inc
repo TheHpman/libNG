@@ -6,6 +6,7 @@ BIOS_DEVMODE		= 0x10fe80
 REG_P1CNT		= 0x300000	;* P1 controller port
 REG_DIPSW		= 0x300001	;* DSW / WDog
 REG_WATCHDOG		= 0x300001	;* DSW / WDog
+REG_SOUND		= 0x320000	;* Z80 R/W
 REG_P2CNT		= 0x340000	;* P2 controller port
 REG_POUTPUT		= 0x380001	;* controllers outputs
 REG_VRAM_ADDR		= 0x3c0000	;* VRAM address port
@@ -255,6 +256,28 @@ CS_POSITION		= 2
 CS_INFO			= 4
 CS_FWJOB		= 8
 CS_BWJOB		= 12
+
+;*typedef struct palHandle
+;*{
+;*	union
+;*	{
+;*		struct
+;*		{
+;*			u8 acc;		// speed accumulator
+;*			u8 command;
+;*		};
+;*		u16 acc_cmd;
+;*	};
+;*	palette* ptrPalette;
+;*} palHandle;
+
+PH_ACC			= 0
+PH_CMD			= 1
+PH_ACC_CMD		= 0
+PH_PALADDR		= 2
+
+SIZEOF_PALHANDLE	= 6
+
 
 ;* animation macro
 ;* rd0, rd1, ra1: scratch data/addr registers

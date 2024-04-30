@@ -10,6 +10,13 @@
 
 /**
  *  \brief
+ *      Enable watchdog refresh during frame skips
+ * 	Not recommended, watchdog must trigger on softlocks
+ */
+#define FRAMESKIP_KICK_DOG 0
+
+/**
+ *  \brief
  *      Flag for bankswitching support
  */
 #define BANKING_ENABLE 1
@@ -19,6 +26,58 @@
  *      Bankswitching register address (write only, byte access)
  */
 #define REG_BANKING 0x2ffff1
+
+/**
+ *  \brief
+ *      Flag for color math support
+ */
+#define COLORMATH_ENABLE 1
+
+#if COLORMATH_ENABLE
+/**
+ *  \brief
+ *      Palette transfer block size (palettes count per block)
+ */
+#define	PAL_BLOCK_SIZE 16
+#define	PAL_BLOCK_COUNT (256/PAL_BLOCK_SIZE)
+
+/**
+ *  \brief
+ *      Palette transfer limit per vblank (palettes count)
+ */
+#define	PAL_MAX_VBLXFER 128
+#define	PAL_MAX_VBLBLKS (PAL_MAX_VBLXFER/PAL_BLOCK_SIZE)
+
+/**
+ *  \brief
+ *      Color math fading speeds (256/value)
+ */
+#define	CM_SPEED0 128
+#define	CM_SPEED1 64
+#define	CM_SPEED2 32
+#define	CM_SPEED3 16
+#endif	// COLORMATH_ENABLE
+
+/**
+ *  \brief
+ *      Enable sound command ring buffer & handling
+ */
+#define SOUNDBUFFER_ENABLE 1
+
+#if SOUNDBUFFER_ENABLE
+/**
+ *  \brief
+ *      Sound command ring buffer size (power of 2, max 256)
+ */
+#define SOUNDBUFFER_SIZE 64
+
+/**
+ *  \brief
+ *      Send an additional dispatch command during waitVBlank
+ * 	Set to 1 if using 2 bytes sound codes or having overflow issues
+ */
+#define SOUNDBUFFER_DISPATCH_TWICE 0
+#endif
 
 /**
  *  \brief

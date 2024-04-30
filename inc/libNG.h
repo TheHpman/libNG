@@ -22,6 +22,7 @@
 *******************************/
 #include <types.h>
 #include <configNG.h>
+#include <neogeo.h>
 
 /*******************************
 	DEFINES
@@ -279,7 +280,7 @@
 */
 typedef struct paletteInfo {
 	u16		count;			/**< # of exported palettes */
-	u16		data[0];		/**< Palette data */
+	palette		data[0];		/**< Palette data */
 } paletteInfo;
 
 
@@ -554,6 +555,37 @@ u16 sprintf3(u32 printInfo, u16 *dst, char *fmt, ...);
 *      Format string & args
 */
 #define fixPrintf3(printInfo,buffer,...)	do{sprintf3(((printInfo)&0xffff0f00),(u16*)buffer,__VA_ARGS__);*fixJobsPtr++=(((printInfo)&0xfffff000)|FIX_LINE_WRITE);*fixJobsPtr++=(u32)(buffer);}while(0)
+
+
+#if SOUNDBUFFER_ENABLE
+// need to expose data as it is internal use
+//extern u8 sndBuffer[SOUNDBUFFER_SIZE];
+//extern u16 sndBufferIndexRW;
+
+/**
+*  \brief
+*      Resets sound commands ring buffer
+*  \param sendResetCode
+*      If true, also sends the reset code to the sound CPU
+*/
+void sndReset(bool sendResetCode);
+
+/**
+*  \brief
+*      Add a sound code to the ring buffer for later dispatch
+*  \param code
+*      sound code to be added
+*/
+void sndAddCode(u8 code);
+
+/**
+*  \brief
+*      Dispatch one sound command from ring buffer to sound CPU
+*/
+void sndDispatch();
+
+
+#endif	// SOUNDBUFFER_ENABLE
 
 
 #endif // __LIBNG_H__

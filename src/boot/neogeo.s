@@ -42,7 +42,7 @@ _CDDA_ADDR		=	0xffff		;* for CD builds, Z80 CDDA addr
 
 ;* Game specific soft dips
 ;* Game title must be 16 characters width
-;* Option labels must be 12 characters width
+;* Options labels must be 12 characters width
 
 JPconfig:
 	.ascii	"HELLO WORLD JP  "
@@ -50,7 +50,7 @@ JPconfig:
 	.byte	0xff, 0xff, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
 
 NAconfig:
-	.ascii	"HELLO WORLD US  "
+	.ascii	"HELLO WORLD NA  "
 	.word	0xffff, 0xffff
 	.byte	0xff, 0xff, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
 

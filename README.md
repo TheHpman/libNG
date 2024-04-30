@@ -31,7 +31,7 @@ Build the library. From your SGDK folder use:
     make -f makelib.neo
 ```
 > [!NOTE]
-> libNG comes barebones from any SGDK components, if you are used to and want to use some system abstract features (memory, pools, etc...) copy the related files into src/libNG folder and rebuild the library.
+> libNG comes barebones from any SGDK components, if you are used to and want to use some system abstract features (memory, pools, etc...) copy the related files into src/libNG folder and rebuild the library.<br>You may have to fix a couple dependencies depending on the files.
 
 You can now build projects targetting the NEO•GEO, simply use the `makefile.neo` script from your project folder instead of the usual `makefile.gen` one. If you are using an IDE integration, simply change the make script.
 
@@ -40,10 +40,13 @@ You can now build projects targetting the NEO•GEO, simply use the `makefile.ne
 
 
 ## FAQ
-* How do I use Memory card / NEO•GEO feature xxx ?<br>
-Many system features are handled by the system bios and/or bios calls, check SNK documentation.
 * Does it work on real hardware?<br>
 No explosions so far.
+* Where's my main() function?<br>
+Your program have to supply 4 entry point functions: USER, PLAYER_START, DEMO_END and COIN_SOUND.<br>
+Check SNK documentation and/or supplied template project.
+* How do I use Memory card / NEO•GEO feature xxx ?<br>
+Many system features are handled by the system bios and/or bios calls, check SNK documentation.
 * Generated data is huge, how comes?<br>
 NEO•GEO sprites require more data than other classic systems. Also libNG is speed-optimized, meaning it sacrifices rom space for faster execution. With today memory sizes and costs, this shouldn't be an issue.
 * What about sound?<br>

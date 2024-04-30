@@ -61,6 +61,10 @@ CFG_REFILL_DATAINDEX2	=	SC_CONFIG + 14
 CFG_REFILL_DATALENGTH2	=	SC_CONFIG + 16
 
 
+;*/******************************************************************************
+;*				scrollerInit
+;*******************************************************************************/
+
 ;*	void scrollerInit (scroller *s, scrollerInfo *si, ushort sprite, ushort palette, short posX, short posY) {
 scrollerInit:
 	.set	_ARGS, 4+40
@@ -297,9 +301,9 @@ _fillStripB:
 9:		rts
 
 
-;****************************************************************************************************************************
-;****************************************************************************************************************************
-;****************************************************************************************************************************
+;*/******************************************************************************
+;*				scrollerSetPos
+;*******************************************************************************/
 
 ;*	void scrollerSetPos (scroller *s, short posX, short posY)
 
@@ -309,7 +313,7 @@ scrollerSetPos:
 	.set	_posX, _ARGS+4+2	;* word
 	.set	_posY, _ARGS+8+2	;* word
 		move.l	_scrlr(sp), a0					;* a0 = scroller handler
-		move.l	_posX(sp), d0					;* .l read to p^lace in upper word
+		move.l	_posX(sp), d0					;* .l read to place in upper word
 		move.w	_posY(sp), d0					;* d0=targetX|targetY
 		cmp.l	SC_POSX(a0), d0					;* X or Y changed?
 		beq.s	9b						;* return if unchanged
@@ -361,7 +365,8 @@ scrollerSetPos:
 		add.w	d6, d6
 		add.w	d6, d6						;* lead spr index*4
 		lea	_sprIncrementTable(pc), a2
-		lea	(d6.w, a2), a2
+	;*	lea	(d6.w, a2), a2
+		add.w	d6, a2
 
 	.rept	20
 		move.l	d3, (a5)+					;* write sprites posY		12
