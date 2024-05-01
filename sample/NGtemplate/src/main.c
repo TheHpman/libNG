@@ -87,18 +87,8 @@ void doSettings()
 	if (BIOS.MVS_FLAG)
 	{
 		// MVS
-		if (BIOS.DEVMODE)
-		{
-			creditsP1 = &BIOS.CREDITS.P1;
-			creditsP2 = &BIOS.CREDITS.P2;
-		}
-		else
-		{
-			creditsP1 = &CAB_CREDITS_P1;
-			creditsP2 = &CAB_CREDITS_P2;
-		}
-		if (BIOS.COUNTRY_CODE != COUNTRY_USA) // non USA is 1 coin counter
-			creditsP2 = creditsP1;
+		creditsP1 = BIOS.DEVMODE ? &BIOS.CREDITS.P1 : &CAB_CREDITS_P1;
+		creditsP2 = (BIOS.COUNTRY_CODE != COUNTRY_USA) ? creditsP1 : creditsP1 + 1; // USA is 2 chutes
 	}
 	else
 	{
