@@ -78,9 +78,36 @@ u8 localSetting_difficulty;
 u8 localSetting_language;
 bool localSetting_demoSound;
 u8 P1HomeCredits, P2HomeCredits;
+vu8 *creditsP1, *creditsP2;
 
 void doSettings()
 {
+	// setup credits pointers for faster access
+	// (system/region is only checked once here)
+	if (BIOS.MVS_FLAG)
+	{
+		// MVS
+		if (BIOS.DEVMODE)
+		{
+			creditsP1 = &BIOS.CREDITS.P1;
+			creditsP2 = &BIOS.CREDITS.P2;
+		}
+		else
+		{
+			creditsP1 = &CAB_CREDITS_P1;
+			creditsP2 = &CAB_CREDITS_P2;
+		}
+		if (BIOS.COUNTRY_CODE != COUNTRY_USA) // non USA is 1 coin counter
+			creditsP2 = creditsP1;
+	}
+	else
+	{
+		// NEOGEO
+		creditsP1 = &P1HomeCredits;
+		creditsP2 = &P2HomeCredits;
+	}
+
+	// setup game settings
 	if (BIOS.MVS_FLAG)
 	{
 		// MVS, pull settings from soft dips
@@ -104,66 +131,16 @@ void doSettings()
 void creditDisplay()
 {
 	//	/!\ all credits values are BCD format
-	u8 c1, c2;
 
-	if (BIOS.MVS_FLAG)
-	{
-		// MVS
-		if (BIOS.DEVMODE)
-		{
-			c1 = BIOS.CREDITS.P1;
-			c2 = BIOS.CREDITS.P2;
-		}
-		else
-		{
-			c1 = CAB_CREDITS_P1;
-			c2 = CAB_CREDITS_P2;
-		}
-		if (BIOS.COUNTRY_CODE != COUNTRY_USA) // non USA is 1 coin counter
-			c2 = 0xff;
-	}
-	else
-	{
-		// NEOGEO
-		c1 = P1HomeCredits;
-		c2 = P2HomeCredits;
-	}
-
-	if (c2 == 0xff)
-	{
-		fixPrintf1(PRINTINFO(28, 29, 4, 3), "CR %02x", c1);
-	}
-	else
-	{
-		fixPrintf1(PRINTINFO(3, 29, 4, 3), "CR %02x", c1);
-		fixPrintf1(PRINTINFO(28, 29, 4, 3), "CR %02x", c2);
-	}
+	// left side for two chutes only
+	if(creditsP1 != creditsP2)
+		fixPrintf1(PRINTINFO(3, 29, 4, 3), "CR %02x", *creditsP1);
+	fixPrintf1(PRINTINFO(28, 29, 4, 3), "CR %02x", *creditsP2);
 
 	if (BIOS.MVS_FLAG)
 		fixPrintf1(PRINTINFO(18, 29, 4, 3), "LV-%x", localSetting_difficulty + 1);
 
 	// (there's usually a credit/lvl soft dip setting to turn off display of each item)
-}
-
-u8 creditsP1()
-{
-	if (BIOS.MVS_FLAG)
-		return BIOS.DEVMODE ? BIOS.CREDITS.P1 : CAB_CREDITS_P1;
-	else
-		return P1HomeCredits;
-}
-
-u8 creditsP2()
-{
-	if (BIOS.MVS_FLAG)
-	{
-		if (BIOS.COUNTRY_CODE == COUNTRY_USA)
-			return BIOS.DEVMODE ? BIOS.CREDITS.P2 : CAB_CREDITS_P2;
-		else
-			return BIOS.DEVMODE ? BIOS.CREDITS.P1 : CAB_CREDITS_P1;
-	}
-	else
-		return P2HomeCredits;
 }
 
 void initBackupRAM()
@@ -247,7 +224,7 @@ void game()
 			case PLAYER_MODE_NEVER_PLAYED:
 			case PLAYER_MODE_GAMEOVER:
 				fixPrint(PRINTINFO(3, 8, 4, 3), "P1: not playing");
-				if (creditsP1())
+				if (*creditsP1)
 				{
 					BIOS.PLAYER_MODE.P1 = PLAYER_MODE_NEVER_PLAYED; // home fix
 					fixPrint(PRINTINFO(3, 9, 4, 3), "PRESS START");
@@ -266,7 +243,7 @@ void game()
 				break;
 			case PLAYER_MODE_CONTINUE:
 				fixPrintf1(PRINTINFO(3, 8, 4, 3), "P1: cont. ? %03d", timer1);
-				if (creditsP1())
+				if (*creditsP1)
 					fixPrint(PRINTINFO(3, 9, 4, 3), "PRESS START");
 				else
 					fixPrint(PRINTINFO(3, 9, 4, 3), "INSERT COIN");
@@ -280,7 +257,7 @@ void game()
 			case PLAYER_MODE_NEVER_PLAYED:
 			case PLAYER_MODE_GAMEOVER:
 				fixPrint(PRINTINFO(23, 8, 4, 3), "P2: not playing");
-				if (creditsP2())
+				if (*creditsP2)
 				{
 					BIOS.PLAYER_MODE.P2 = PLAYER_MODE_NEVER_PLAYED; // home fix
 					fixPrint(PRINTINFO(23, 9, 4, 3), "PRESS START");
@@ -299,7 +276,7 @@ void game()
 				break;
 			case PLAYER_MODE_CONTINUE:
 				fixPrintf1(PRINTINFO(23, 8, 4, 3), "P2: cont. ? %03d", timer2);
-				if (creditsP2())
+				if (*creditsP2)
 					fixPrint(PRINTINFO(23, 9, 4, 3), "PRESS START");
 				else
 					fixPrint(PRINTINFO(23, 9, 4, 3), "INSERT COIN");
