@@ -118,7 +118,7 @@ void doSettings()
 	}
 }
 
-void creditDisplay()
+void printCredits()
 {
 	//	/!\ all credits values are BCD format
 
@@ -156,20 +156,48 @@ void customSplash()
 	// custom splash screen animation, if not using the bios one (NEO-GEO spinning logo)
 }
 
+const char joinMessages[][21] = {
+	"    INSERT COIN     \0",
+	"   PRESS 1P START   \0",
+	"   PRESS 2P START   \0",
+	"PRESS 1P OR 2P START\0",
+	"                    \0"};
+
+void printJoinMsg()
+{
+	char *joinMsg;
+
+	if(BIOS.FRAME_COUNTER & 0x20)
+		joinMsg = (char *)joinMessages[4];
+	else
+	{
+		u8 idx = 0;
+
+		if(*creditsP1) idx += 1;
+		if(*creditsP2 > ((creditsP1 != creditsP2) ? 0 : 1)) idx += 2;
+		joinMsg = (char *)joinMessages[idx];
+	}
+	// non VBL synced print will do for this test program
+	fixPrint(PRINTINFO(10, 21, 4, 3), joinMsg);
+}
+
 void titleDisplay()
 {
 	// title + compulsion timer display
 
 	palJobPut(0, 8, fixPalettes);
 	backgroundColor = NGCOLOR_LIGHTRED;
+	fixPrint(PRINTINFO(14, 7, 4, 3), "TITLE SCREEN");
+	fixPrint(PRINTINFO(18, 24, 4, 3), "TIME");
 
 	while (1)
 	{
 		// no need to check for timeout, BIOS will handle that
 		SCClose();
 		waitVBlank();
-		fixPrint(PRINTINFO(2, 4, 4, 3), "TITLE SCREEN");
-		fixPrintf1(PRINTINFO(2, 5, 4, 3), "TIME: %02x", BIOS.COMPULSION_TIMER);
+
+		printJoinMsg();
+		fixPrintf1(PRINTINFO(19, 25, 4, 3), "%02x", BIOS.COMPULSION_TIMER);
 		if ((BIOS.PLAYER_MODE.P1 == PLAYER_MODE_PLAYING) || (BIOS.PLAYER_MODE.P2 == PLAYER_MODE_PLAYING))
 			return;
 	}
@@ -188,6 +216,8 @@ void attractDemo()
 	{
 		SCClose();
 		waitVBlank();
+
+		printJoinMsg();
 		fixPrintf1(PRINTINFO(2, 4, 4, 3), "Attract demo timer:%d ", timer);
 		if ((BIOS.PLAYER_MODE.P1 == PLAYER_MODE_PLAYING) || (BIOS.PLAYER_MODE.P2 == PLAYER_MODE_PLAYING))
 			return;
@@ -288,7 +318,7 @@ void USER()
 	clearFixLayer();
 	// using callback as demonstration purpose only,
 	// this is in no way an optimal place to print credits
-	VBL_callBack = VBL_skipCallBack = creditDisplay;
+	VBL_callBack = VBL_skipCallBack = printCredits;
 
 	// check what the BIOS wants
 	switch (BIOS.USER_REQUEST)
