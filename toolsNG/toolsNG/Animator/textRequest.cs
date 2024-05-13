@@ -12,7 +12,6 @@ namespace Animator
     public partial class textRequest : Form
     {
         public string text;
-        //private string textBckp;
 
         public textRequest()
         {
@@ -30,12 +29,10 @@ namespace Animator
         {
             txtBox.Text = text;
             txtBox.SelectAll();
-            //textBckp = text;
         }
 
         private void btnCancel_Click(object sender, EventArgs e)
         {
-            //text = textBckp;
             this.DialogResult = DialogResult.Cancel;
             this.Close();
         }

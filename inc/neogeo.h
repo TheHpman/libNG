@@ -89,6 +89,7 @@
 // misc hardware I/O
 #define REG_P1CNT		(*(vu8*)0x300000)	/**< Controller 1 input (active low) */
 #define REG_DIPSW		(*(vu8*)0x300001)	/**< Hardware dip switches (active low) */
+#define FREE_PLAY		(!(REG_DIPSW & 0x40))	/**< Free play setting shorthand */
 #define REG_SYSTYPE		(*(vu8*)0x300081)	/**< System ID */
 #define REG_SOUND		(*(vu8*)0x320000)	/**< Z80 communication (R/W) */
 #define REG_STATUS_A		(*(vu8*)0x320001)	/**< System switches (MVS, active low) */
@@ -145,7 +146,7 @@
 // LSPC chip
 typedef struct _LSPC {
 	union {
-		u32 ADDR_DATA;		/**< LSPC VRAM address & data register, 32 bit access */
+		u32 ADDR_DATA;		/**< LSPC VRAM address & data register, 32bit access */
 		struct {
 			u16 ADDR;	/**< LSPC VRAM address register */
 			u16 DATA;	/**< LSPC VRAM data register */
@@ -154,7 +155,7 @@ typedef struct _LSPC {
 	u16 MODULO;			/**< LSPC VRAM write modulo register */
 	u16 MODE;			/**< LSPC mode register */
 	union {
-		u32 TIMER;		/**< LSPC timer value register, 32bits access */
+		u32 TIMER;		/**< LSPC timer value register, 32bit access */
 		struct {
 			u16 TIMERHIGH;	/**< LSPC timer value register, high */
 			u16 TIMERLOW;	/**< LSPC timer value register, low */

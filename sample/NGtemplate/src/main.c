@@ -167,14 +167,16 @@ void printJoinMsg()
 {
 	char *joinMsg;
 
-	if(BIOS.FRAME_COUNTER & 0x20)
+	if (BIOS.FRAME_COUNTER & 0x20)
 		joinMsg = (char *)joinMessages[4];
+	else if (FREE_PLAY)
+		joinMsg = (char *)joinMessages[3];
 	else
 	{
 		u8 idx = 0;
 
-		if(*creditsP1) idx += 1;
-		if(*creditsP2 > ((creditsP1 != creditsP2) ? 0 : 1)) idx += 2;
+		if (*creditsP1) idx += 1;
+		if (*creditsP2 > ((creditsP1 != creditsP2) ? 0 : 1)) idx += 2;
 		joinMsg = (char *)joinMessages[idx];
 	}
 	// non VBL synced print will do for this test program
@@ -244,7 +246,7 @@ void game()
 			case PLAYER_MODE_NEVER_PLAYED:
 			case PLAYER_MODE_GAMEOVER:
 				fixPrint(PRINTINFO(3, 8, 4, 3), "P1: not playing");
-				if (*creditsP1)
+				if (*creditsP1 || FREE_PLAY)
 				{
 					BIOS.PLAYER_MODE.P1 = PLAYER_MODE_NEVER_PLAYED; // home fix
 					fixPrint(PRINTINFO(3, 9, 4, 3), "PRESS START");
@@ -263,7 +265,7 @@ void game()
 				break;
 			case PLAYER_MODE_CONTINUE:
 				fixPrintf1(PRINTINFO(3, 8, 4, 3), "P1: cont. ? %03d", timer1);
-				if (*creditsP1)
+				if (*creditsP1 || FREE_PLAY)
 					fixPrint(PRINTINFO(3, 9, 4, 3), "PRESS START");
 				else
 					fixPrint(PRINTINFO(3, 9, 4, 3), "INSERT COIN");
@@ -277,7 +279,7 @@ void game()
 			case PLAYER_MODE_NEVER_PLAYED:
 			case PLAYER_MODE_GAMEOVER:
 				fixPrint(PRINTINFO(23, 8, 4, 3), "P2: not playing");
-				if (*creditsP2)
+				if (*creditsP2 || FREE_PLAY)
 				{
 					BIOS.PLAYER_MODE.P2 = PLAYER_MODE_NEVER_PLAYED; // home fix
 					fixPrint(PRINTINFO(23, 9, 4, 3), "PRESS START");
@@ -296,7 +298,7 @@ void game()
 				break;
 			case PLAYER_MODE_CONTINUE:
 				fixPrintf1(PRINTINFO(23, 8, 4, 3), "P2: cont. ? %03d", timer2);
-				if (*creditsP2)
+				if (*creditsP2 || FREE_PLAY)
 					fixPrint(PRINTINFO(23, 9, 4, 3), "PRESS START");
 				else
 					fixPrint(PRINTINFO(23, 9, 4, 3), "INSERT COIN");
