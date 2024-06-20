@@ -1,4 +1,4 @@
-	.include "src/libNG/defines.inc"
+	.include "srcNG/defines.inc"
 	#include <configNG.h>
 	.align 2
 
