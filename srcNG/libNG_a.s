@@ -134,7 +134,7 @@ sndAddCode:
 
 		;* update index
 		addq.b	#1, d0
-		and.b	SND_IDX_MASK, d0
+		and.b	#SND_IDX_MASK, d0
 	;*	cmp.b	sndBufferIndexRW, d0	;* ring buffer full?
 		cmp.b	-1(a0), d0
 		beq.s	9f
