@@ -19,7 +19,7 @@ namespace Framer
     public partial class Framer : Form
     {
         private XmlDocument doc = null;
-        List<sprData> sheets = null;
+        public List<sprData> sheets = null;
         Rectangle drawLocation = new Rectangle(0, 0, 0, 0);
         int currentSheet = -1;
         int currentFrame = -1;
@@ -76,21 +76,7 @@ namespace Framer
 
         private void toolStripComboBoxScale_SelectedIndexChanged(object sender, EventArgs e)
         {
-            switch (toolStripComboBoxScale.SelectedIndex)
-            {
-                case 0:
-                    rescale(1);
-                    break;
-                case 1:
-                    rescale(2);
-                    break;
-                case 2:
-                    rescale(4);
-                    break;
-                case 3:
-                    rescale(8);
-                    break;
-            }
+            rescale(1 << (toolStripComboBoxScale.SelectedIndex & 3));
             this.Invalidate(drawLocation);
         }
 
@@ -158,20 +144,34 @@ namespace Framer
             mouseArea.Height = scrollV.Height;
         }
 
+        private void Framer_Shown(object sender, EventArgs e)
+        {
+#if DEBUG
+
+#endif
+        }
+
+        private void openFrameTool(Bitmap bmp = null, frame frm = null)
+        {
+            frameTool tool = new frameTool(bmp, frm);
+            tool.parent = this;
+            tool.ShowDialog();
+            cbBoxSpriteList_SelectedIndexChanged(null, EventArgs.Empty);
+            //cbBoxSpriteList.SelectedIndexChanged
+        }
+
         private void selectFrame(int frm)
         {
-            int x;
             //clear grid
             spriteRefilling = true;
             while (dataGridSprites.Rows.Count > (dataGridSprites.AllowUserToAddRows == true ? 1 : 0))
-            {
                 dataGridSprites.Rows.Remove(dataGridSprites.Rows[0]);
-            }
             spriteRefilling = false;
 
             if (frm == -1) return;
-            for (x = 0; x < sheets[currentSheet].frames[frm].sprites.Count; x++)
-                dataGridSprites.Rows.Add(sheets[currentSheet].frames[frm].sprites[x].posX, sheets[currentSheet].frames[frm].sprites[x].posY, sheets[currentSheet].frames[frm].sprites[x].width, sheets[currentSheet].frames[frm].sprites[x].height);
+            //sheets[currentSheet].frames[frm].updateOutline(unitShift[sys]);
+            foreach (sprite spr in sheets[currentSheet].frames[frm].sprites)
+                dataGridSprites.Rows.Add(spr.posX, spr.posY, spr.width, spr.height);
         }
 
         private void dataGridFrames_SelectionChanged(object sender, EventArgs e)
@@ -192,16 +192,17 @@ namespace Framer
 
         private void dataGridFrames_CellValidating(object sender, DataGridViewCellValidatingEventArgs e)
         {
-            ushort x;
+            int x;
 
-            if (!ushort.TryParse(e.FormattedValue.ToString(), out x))
+            if (e.ColumnIndex < 6)
             {
-                e.Cancel = true;
-                return;
-            }
-            if (x < 0)
-            {
-                e.Cancel = true;
+                if (!int.TryParse(e.FormattedValue.ToString(), out x))
+                {
+                    e.Cancel = true;
+                    return;
+                }
+                if (x < 0)
+                    e.Cancel = true;
             }
         }
 
@@ -213,6 +214,9 @@ namespace Framer
             sheets[currentSheet].frames[e.RowIndex].posY = ushort.Parse(dataGridFrames.Rows[e.RowIndex].Cells[1].Value.ToString());
             sheets[currentSheet].frames[e.RowIndex].width = ushort.Parse(dataGridFrames.Rows[e.RowIndex].Cells[2].Value.ToString());
             sheets[currentSheet].frames[e.RowIndex].height = ushort.Parse(dataGridFrames.Rows[e.RowIndex].Cells[3].Value.ToString());
+            sheets[currentSheet].frames[e.RowIndex].doFlipX = Convert.ToBoolean(dataGridFrames.Rows[e.RowIndex].Cells[6].Value);
+            sheets[currentSheet].frames[e.RowIndex].doFlipY = Convert.ToBoolean(dataGridFrames.Rows[e.RowIndex].Cells[7].Value);
+            sheets[currentSheet].frames[e.RowIndex].doFlipXY = Convert.ToBoolean(dataGridFrames.Rows[e.RowIndex].Cells[8].Value);
         }
 
         private void Form1_MouseMove(object sender, MouseEventArgs e)
@@ -524,7 +528,7 @@ namespace Framer
             switch (e.KeyCode)
             {
                 case Keys.Space:
-                    _addSprite();
+                    btnAddSprite.PerformClick();
                     e.Handled = true;
                     break;
                 case Keys.Left:
@@ -554,7 +558,7 @@ namespace Framer
                 case Keys.N:
                     if (e.Modifiers == Keys.None)
                     {
-                        _addFrame();
+                        btnAddFrame.PerformClick();
                         e.Handled = true;
                     }
                     break;
@@ -597,7 +601,7 @@ namespace Framer
                     break;
                 case Keys.F:
                     if (e.Modifiers == Keys.None)
-                        _addFrame();
+                        btnAddFrame.PerformClick();
                     else if (e.Modifiers == (Keys.Control | Keys.Shift))
                     {
                         //undocumented, sp flips process for unnamed project
@@ -643,7 +647,8 @@ namespace Framer
             for (int i = 0; i < sheets[currentSheet].frames[currentFrame].sprites.Count; i++)
                 dataGridSprites.Rows[i].SetValues(sheets[currentSheet].frames[currentFrame].sprites[i].posX, sheets[currentSheet].frames[currentFrame].sprites[i].posY, sheets[currentSheet].frames[currentFrame].sprites[i].width, sheets[currentSheet].frames[currentFrame].sprites[i].height);
             sheets[currentSheet].frames[currentFrame].updateOutline(unitShift[sys]);
-            dataGridFrames.Rows[currentFrame].SetValues(sheets[currentSheet].frames[currentFrame].posX, sheets[currentSheet].frames[currentFrame].posY, sheets[currentSheet].frames[currentFrame].width, sheets[currentSheet].frames[currentFrame].height, sheets[currentSheet].frames[currentFrame].sprites.Count, sheets[currentSheet].frames[currentFrame].tileCount);
+            dataGridFrames.Rows[currentFrame].SetValues(sheets[currentSheet].frames[currentFrame].posX, sheets[currentSheet].frames[currentFrame].posY, sheets[currentSheet].frames[currentFrame].width, sheets[currentSheet].frames[currentFrame].height, sheets[currentSheet].frames[currentFrame].sprites.Count, sheets[currentSheet].frames[currentFrame].tileCount,
+                sheets[currentSheet].frames[currentFrame].doFlipX, sheets[currentSheet].frames[currentFrame].doFlipY, sheets[currentSheet].frames[currentFrame].doFlipX);
         }
 
         private void resizeSpriteX(int mod)
@@ -790,19 +795,21 @@ namespace Framer
 
         private void selectSheet(int sht)
         {
-            int x;
             //clear grid
             refilling = true;
             dataGridFrames.Rows.Clear();
             refilling = false;
 
             //dataGridFrames.Hide();
-            for (x = 0; x < sheets[sht].frames.Count; x++)
+            foreach (frame frm in sheets[sht].frames)
             {
-                dataGridFrames.Rows.Add(sheets[sht].frames[x].posX, sheets[sht].frames[x].posY, sheets[sht].frames[x].width, sheets[sht].frames[x].height, sheets[sht].frames[x].sprites.Count, sheets[sht].frames[x].tileCount);
+                int x;
+                frm.updateOutline(unitShift[sys]);
+                x = dataGridFrames.Rows.Add(frm.posX, frm.posY, frm.width, frm.height, frm.sprites.Count, frm.tileCount, frm.doFlipX, frm.doFlipY, frm.doFlipXY);
+                if (frm.customLayout)
+                    dataGridFrames.Rows[x].DefaultCellStyle.BackColor = Color.LightBlue;
             }
             //dataGridFrames.Show();
-
             groupBoxFrames.Text = "Frames - " + cbBoxSpriteList.Items[sht];
 
             scrollH.Value = 0;
@@ -829,8 +836,7 @@ namespace Framer
         private void loadXML()
         {
             // openFileDialog.Filter = "XML files (*.xml)|*.xml|All files (*.*)|*.*";
-            XmlNodeList subNodes = null;
-            string baseDir = null;
+            string baseDir;
             int gridW, gridH;
 
             if (openFileDialog.ShowDialog() == DialogResult.OK)
@@ -853,11 +859,8 @@ namespace Framer
                         cbBoxSpriteList.Items.Add(sprtNodes[i].Attributes["id"].Value);
                         sheets.Add(new sprData(baseDir + sprtNodes[i].SelectSingleNode("file").InnerText, sprtNodes[i]));
 
-                        subNodes = sprtNodes[i].SelectNodes("frame");
-                        for (int j = 0; j < subNodes.Count; j++)
-                        {
-                            sheets[i].parseFrame(subNodes[j], unitShift[sys]);
-                        }
+                        foreach (XmlNode frmNode in sprtNodes[i].SelectNodes("frame"))
+                            sheets[i].parseFrame(frmNode, unitShift[sys]);
 
                         gridW = gridH = 0;
                         if (sprtNodes[i].Attributes["grid"] != null)
@@ -960,7 +963,26 @@ namespace Framer
             gridMode = chkBoxGridMode.Checked;
         }
 
-        #endregion
+        private void dataGridFrames_RowHeaderMouseDoubleClick(object sender, DataGridViewCellMouseEventArgs e)
+        {
+            openFrameTool(sheets[currentSheet].bmp, sheets[currentSheet].frames[e.RowIndex]);
+        }
 
+        #endregion
+    }
+}
+
+namespace customControls
+{
+    public class PictureBoxWithInterpolationMode : PictureBox
+    {
+        public InterpolationMode InterpolationMode { get; set; }
+
+        protected override void OnPaint(PaintEventArgs paintEventArgs)
+        {
+            paintEventArgs.Graphics.InterpolationMode = InterpolationMode;
+            paintEventArgs.Graphics.PixelOffsetMode = PixelOffsetMode.Half;
+            base.OnPaint(paintEventArgs);
+        }
     }
 }

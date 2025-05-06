@@ -2,10 +2,11 @@
 using System.Drawing;
 using System.Xml;
 using System.IO;
+using System.Windows.Forms;
 
 namespace Framer
 {
-    class sprData
+    public class sprData
     {
         public Bitmap bmp = null;
         public List<frame> frames = null;
@@ -41,12 +42,22 @@ namespace Framer
         {
             XmlNodeList sprNodes = null;
             frame frame = null;
-            //int split, i;
-            //string data, pos, size;
             int x, y, w, h;
 
             frame = new frame();
             sprNodes = frameNode.SelectNodes("hwspr");
+
+            if (frameNode.Attributes["customOutline"] != null)
+            {
+                string str = frameNode.Attributes["customOutline"].Value;
+                frame.customLayout = true;
+
+                x = int.Parse(str.Split(':')[0].Split(',')[0].Trim());
+                y = int.Parse(str.Split(':')[0].Split(',')[1].Trim());
+                w = int.Parse(str.Split(':')[1].Split(',')[0].Trim());
+                h = int.Parse(str.Split(':')[1].Split(',')[1].Trim());
+                frame.customOutline = new Rectangle(x, y, w, h);
+            }
 
             if ((frameNode.Attributes["outline"] == null) && (sprNodes.Count == 0))
             {   //old NG only framer format
@@ -65,19 +76,36 @@ namespace Framer
                     w = int.Parse(node.InnerText.Split(':')[1].Split(',')[0].Trim());
                     h = int.Parse(node.InnerText.Split(':')[1].Split(',')[1].Trim());
                     frame.addSprite(x, y, w, h, unitShift);
+
+                    if (node.Attributes["relocate"] != null)
+                    {
+                        string str = node.Attributes["relocate"].Value;
+                        frame.sprites[frame.sprites.Count - 1].relocateX = int.Parse(str.Split(',')[0].Trim());
+                        frame.sprites[frame.sprites.Count - 1].relocateY = int.Parse(str.Split(',')[1].Trim());
+                    }
                 }
             }
+
+            if (frameNode.Attributes["flips"] != null)
+            {
+                frame.doFlipX = frameNode.Attributes["flips"].InnerText.ToUpper().Contains("X") ? true : false;
+                frame.doFlipY = frameNode.Attributes["flips"].InnerText.ToUpper().Contains("Y") ? true : false;
+                frame.doFlipXY = frameNode.Attributes["flips"].InnerText.ToUpper().Contains("Z") ? true : false;
+            }
+
+            //frame.updateOutline(4);
+            frame.posX = 8;
+            frame.posY = 8;
+            frame.width = 16;
+            frame.height = 16;
             frames.Add(frame);
         }
 
         public void rebuildXml(XmlDocument doc)
         {
-            int i, j;
-            XmlNodeList subNodes = node.SelectNodes("frame");
             XmlNode dataNode = null;
             XmlNode hwSprNode = null;
             XmlAttribute attr = null;
-
 
             if (hasGrid)
             {
@@ -86,19 +114,41 @@ namespace Framer
                 node.Attributes.Append(attr);
             }
 
-            for (i = 0; i < subNodes.Count; i++)
-                node.RemoveChild(subNodes[i]);
+            foreach (XmlNode n in node.SelectNodes("frame"))
+                node.RemoveChild(n);
 
-            for (i = 0; i < frames.Count; i++)
+            foreach (frame frm in frames)
             {
                 dataNode = doc.CreateElement("frame");
                 attr = doc.CreateAttribute("outline");
-                attr.Value = string.Format("{0},{1}:{2},{3}", frames[i].posX, frames[i].posY, frames[i].width, frames[i].height);
+                attr.Value = string.Format("{0},{1}:{2},{3}", frm.posX, frm.posY, frm.width, frm.height);
                 dataNode.Attributes.SetNamedItem(attr);
-                for (j = 0; j < frames[i].sprites.Count; j++)
+
+                if (frm.doFlipX || frm.doFlipY || frm.doFlipXY)
+                {
+                    attr = doc.CreateAttribute("flips");
+                    attr.Value = (frm.doFlipX ? "x" : "") + (frm.doFlipY ? "y" : "") + (frm.doFlipXY ? "z" : "");
+                    dataNode.Attributes.SetNamedItem(attr);
+                }
+
+                if (frm.customLayout)
+                {
+                    attr = doc.CreateAttribute("customOutline");
+                    attr.Value = string.Format("{0},{1}:{2},{3}", frm.customOutline.X, frm.customOutline.Y, frm.customOutline.Width, frm.customOutline.Height);
+                    dataNode.Attributes.SetNamedItem(attr);
+                }
+
+                foreach (sprite spr in frm.sprites)
                 {
                     hwSprNode = doc.CreateElement("hwspr");
-                    hwSprNode.InnerText = string.Format("{0},{1}:{2},{3}", frames[i].sprites[j].posX, frames[i].sprites[j].posY, frames[i].sprites[j].width, frames[i].sprites[j].height);
+                    hwSprNode.InnerText = string.Format("{0},{1}:{2},{3}", spr.posX, spr.posY, spr.width, spr.height);
+                    
+                    if(frm.customLayout)
+                    {
+                        attr = doc.CreateAttribute("relocate");
+                        attr.Value = string.Format("{0},{1}", spr.relocateX, spr.relocateY);
+                        hwSprNode.Attributes.SetNamedItem(attr);
+                    }
                     dataNode.AppendChild(hwSprNode);
                 }
                 node.AppendChild(dataNode);
@@ -106,17 +156,21 @@ namespace Framer
         }
     }
 
-    class frame
+    public class frame
     {
         public List<sprite> sprites = null;
 
         public int posX, posY, width, height, tileCount;
+        public bool doFlipX, doFlipY, doFlipXY;
         public Rectangle cell = new Rectangle(0, 0, 0, 0);
+        public bool customLayout = false;
+        public Rectangle customOutline = new Rectangle(0, 0, 0, 0);
 
         public frame()
         {
             sprites = new List<sprite>(0);
             posX = posY = width = height = tileCount = 0;
+            doFlipX = doFlipY = doFlipXY = false;
         }
 
         public void updateOutline(int tileShift)
@@ -146,10 +200,12 @@ namespace Framer
 
         public bool addSprite(int x, int y, int w, int h, int unitShift)
         {
-            foreach(sprite s in sprites)
+            foreach (sprite s in sprites)
             {
                 if (s.posX == x && s.posY == y && s.width == w && s.height == h)
-                    return false;
+                    if (MessageBox.Show("This sprite is already defined, add a duplicate?", "Duplicate sprite?", MessageBoxButtons.YesNo, MessageBoxIcon.Warning, MessageBoxDefaultButton.Button2) == DialogResult.Yes)
+                        break;
+                    else return false;
             }
             sprites.Add(new sprite(x, y, w, h));
             updateOutline(unitShift);
@@ -164,9 +220,10 @@ namespace Framer
     }
 
     //HW sprite definition
-    class sprite
+    public class sprite
     {
         public int posX, posY, width, height;
+        public int relocateX = 0, relocateY = 0;
 
         public sprite(int x, int y, int w, int h)
         {

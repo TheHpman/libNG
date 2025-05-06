@@ -1121,10 +1121,12 @@ namespace Animator
         private void exportData()
         {
             int i, j;
-            string asmOut = "\t.macro\t_ANM_END\n\t.word\t0xc000\n\t.endm\n\n" +
-                            "\t.macro\t_ANM_REPEAT _count\n\t.word\t0x8000, \\_count\n\t.endm\n\n"+
-                            "\t.macro\t_ANM_LINK _id _ptr\n\t.word\t0xa000, \\_id\n\t.long\t\\_ptr\n\t.endm\n\n"
-                ;
+            // (moved macro defines to buildchar)
+            //string asmOut = "\t.macro\t_ANM_END\n\t.word\t0xc000\n\t.endm\n\n" +
+            //                "\t.macro\t_ANM_REPEAT _count\n\t.word\t0x8000, \\_count\n\t.endm\n\n"+
+            //                "\t.macro\t_ANM_LINK _id _ptr\n\t.word\t0xa000, \\_id\n\t.long\t\\_ptr\n\t.endm\n\n"
+            //    ;
+            string asmOut = "";
             string asmOut2 = "";
             string cOut = "";
             string baseName;

@@ -33,13 +33,9 @@
             this.label7 = new System.Windows.Forms.Label();
             this.trackBarFrame = new System.Windows.Forms.TrackBar();
             this.toolStrip1 = new System.Windows.Forms.ToolStrip();
-            this.toolStripButtonOpen = new System.Windows.Forms.ToolStripButton();
-            this.toolStripButtonSave = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
             this.toolStripLabel1 = new System.Windows.Forms.ToolStripLabel();
             this.toolStripComboBoxScale = new System.Windows.Forms.ToolStripComboBox();
-            this.toolStripButtonZoomOut = new System.Windows.Forms.ToolStripButton();
-            this.toolStripButtonZoomIn = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
             this.toolStripLabel2 = new System.Windows.Forms.ToolStripLabel();
             this.toolStripComboBoxSystem = new System.Windows.Forms.ToolStripComboBox();
@@ -53,12 +49,6 @@
             this.dataGridViewTextBoxColumn4 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.btnAddSprite = new System.Windows.Forms.Button();
             this.dataGridFrames = new System.Windows.Forms.DataGridView();
-            this.colPosX = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.colPosY = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.colWidth = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.colHeight = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.colSprts = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.colTiles = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.cbBoxSpriteList = new System.Windows.Forms.ComboBox();
             this.trackBarMask = new System.Windows.Forms.TrackBar();
             this.panelMaskColor = new System.Windows.Forms.Panel();
@@ -70,6 +60,19 @@
             this.scrollH = new System.Windows.Forms.HScrollBar();
             this.colorDialog1 = new System.Windows.Forms.ColorDialog();
             this.chkBoxGridMode = new System.Windows.Forms.CheckBox();
+            this.colPosX = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.colPosY = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.colWidth = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.colHeight = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.colSprts = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.colTiles = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.colFlipX = new System.Windows.Forms.DataGridViewCheckBoxColumn();
+            this.colFlipY = new System.Windows.Forms.DataGridViewCheckBoxColumn();
+            this.colFlipXY = new System.Windows.Forms.DataGridViewCheckBoxColumn();
+            this.toolStripButtonOpen = new System.Windows.Forms.ToolStripButton();
+            this.toolStripButtonSave = new System.Windows.Forms.ToolStripButton();
+            this.toolStripButtonZoomOut = new System.Windows.Forms.ToolStripButton();
+            this.toolStripButtonZoomIn = new System.Windows.Forms.ToolStripButton();
             ((System.ComponentModel.ISupportInitialize)(this.trackBarFrame)).BeginInit();
             this.toolStrip1.SuspendLayout();
             this.groupBox1.SuspendLayout();
@@ -135,27 +138,6 @@
             this.toolStrip1.TabIndex = 37;
             this.toolStrip1.Text = "toolStrip1";
             // 
-            // toolStripButtonOpen
-            // 
-            this.toolStripButtonOpen.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.toolStripButtonOpen.Image = ((System.Drawing.Image)(resources.GetObject("toolStripButtonOpen.Image")));
-            this.toolStripButtonOpen.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.toolStripButtonOpen.Name = "toolStripButtonOpen";
-            this.toolStripButtonOpen.Size = new System.Drawing.Size(23, 22);
-            this.toolStripButtonOpen.Text = "Open stage";
-            this.toolStripButtonOpen.ToolTipText = "Open";
-            this.toolStripButtonOpen.Click += new System.EventHandler(this.toolStripButtonOpen_Click);
-            // 
-            // toolStripButtonSave
-            // 
-            this.toolStripButtonSave.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.toolStripButtonSave.Image = global::Framer.Properties.Resources.disk;
-            this.toolStripButtonSave.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.toolStripButtonSave.Name = "toolStripButtonSave";
-            this.toolStripButtonSave.Size = new System.Drawing.Size(23, 22);
-            this.toolStripButtonSave.Text = "Save";
-            this.toolStripButtonSave.Click += new System.EventHandler(this.toolStripButtonSave_Click);
-            // 
             // toolStripSeparator1
             // 
             this.toolStripSeparator1.Name = "toolStripSeparator1";
@@ -178,26 +160,6 @@
             this.toolStripComboBoxScale.Name = "toolStripComboBoxScale";
             this.toolStripComboBoxScale.Size = new System.Drawing.Size(75, 25);
             this.toolStripComboBoxScale.SelectedIndexChanged += new System.EventHandler(this.toolStripComboBoxScale_SelectedIndexChanged);
-            // 
-            // toolStripButtonZoomOut
-            // 
-            this.toolStripButtonZoomOut.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.toolStripButtonZoomOut.Image = ((System.Drawing.Image)(resources.GetObject("toolStripButtonZoomOut.Image")));
-            this.toolStripButtonZoomOut.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.toolStripButtonZoomOut.Name = "toolStripButtonZoomOut";
-            this.toolStripButtonZoomOut.Size = new System.Drawing.Size(23, 22);
-            this.toolStripButtonZoomOut.Text = "Scale down";
-            this.toolStripButtonZoomOut.Click += new System.EventHandler(this.toolStripButtonZoomOut_Click);
-            // 
-            // toolStripButtonZoomIn
-            // 
-            this.toolStripButtonZoomIn.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.toolStripButtonZoomIn.Image = ((System.Drawing.Image)(resources.GetObject("toolStripButtonZoomIn.Image")));
-            this.toolStripButtonZoomIn.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.toolStripButtonZoomIn.Name = "toolStripButtonZoomIn";
-            this.toolStripButtonZoomIn.Size = new System.Drawing.Size(23, 22);
-            this.toolStripButtonZoomIn.Text = "Scale up";
-            this.toolStripButtonZoomIn.Click += new System.EventHandler(this.toolStripButtonZoomIn_Click);
             // 
             // toolStripSeparator2
             // 
@@ -333,62 +295,19 @@
             this.colWidth,
             this.colHeight,
             this.colSprts,
-            this.colTiles});
+            this.colTiles,
+            this.colFlipX,
+            this.colFlipY,
+            this.colFlipXY});
             this.dataGridFrames.Location = new System.Drawing.Point(6, 19);
             this.dataGridFrames.Name = "dataGridFrames";
-            this.dataGridFrames.ReadOnly = true;
             this.dataGridFrames.Size = new System.Drawing.Size(313, 147);
             this.dataGridFrames.TabIndex = 1;
             this.dataGridFrames.CellValidated += new System.Windows.Forms.DataGridViewCellEventHandler(this.dataGridFrames_CellValidated);
             this.dataGridFrames.CellValidating += new System.Windows.Forms.DataGridViewCellValidatingEventHandler(this.dataGridFrames_CellValidating);
+            this.dataGridFrames.RowHeaderMouseDoubleClick += new System.Windows.Forms.DataGridViewCellMouseEventHandler(this.dataGridFrames_RowHeaderMouseDoubleClick);
             this.dataGridFrames.RowsRemoved += new System.Windows.Forms.DataGridViewRowsRemovedEventHandler(this.dataGridFrames_RowsRemoved);
             this.dataGridFrames.SelectionChanged += new System.EventHandler(this.dataGridFrames_SelectionChanged);
-            // 
-            // colPosX
-            // 
-            this.colPosX.HeaderText = "pos X";
-            this.colPosX.Name = "colPosX";
-            this.colPosX.ReadOnly = true;
-            this.colPosX.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
-            this.colPosX.Width = 42;
-            // 
-            // colPosY
-            // 
-            this.colPosY.HeaderText = "pos Y";
-            this.colPosY.Name = "colPosY";
-            this.colPosY.ReadOnly = true;
-            this.colPosY.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
-            this.colPosY.Width = 42;
-            // 
-            // colWidth
-            // 
-            this.colWidth.HeaderText = "width";
-            this.colWidth.Name = "colWidth";
-            this.colWidth.ReadOnly = true;
-            this.colWidth.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
-            this.colWidth.Width = 42;
-            // 
-            // colHeight
-            // 
-            this.colHeight.HeaderText = "height";
-            this.colHeight.Name = "colHeight";
-            this.colHeight.ReadOnly = true;
-            this.colHeight.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
-            this.colHeight.Width = 42;
-            // 
-            // colSprts
-            // 
-            this.colSprts.HeaderText = "Sprites";
-            this.colSprts.Name = "colSprts";
-            this.colSprts.ReadOnly = true;
-            this.colSprts.Width = 42;
-            // 
-            // colTiles
-            // 
-            this.colTiles.HeaderText = "Tiles";
-            this.colTiles.Name = "colTiles";
-            this.colTiles.ReadOnly = true;
-            this.colTiles.Width = 42;
             // 
             // cbBoxSpriteList
             // 
@@ -505,6 +424,111 @@
             this.chkBoxGridMode.UseVisualStyleBackColor = true;
             this.chkBoxGridMode.CheckedChanged += new System.EventHandler(this.chkBoxGridMode_CheckedChanged);
             // 
+            // colPosX
+            // 
+            this.colPosX.HeaderText = "pos X";
+            this.colPosX.Name = "colPosX";
+            this.colPosX.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
+            this.colPosX.Width = 42;
+            // 
+            // colPosY
+            // 
+            this.colPosY.HeaderText = "pos Y";
+            this.colPosY.Name = "colPosY";
+            this.colPosY.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
+            this.colPosY.Width = 42;
+            // 
+            // colWidth
+            // 
+            this.colWidth.HeaderText = "width";
+            this.colWidth.Name = "colWidth";
+            this.colWidth.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
+            this.colWidth.Width = 42;
+            // 
+            // colHeight
+            // 
+            this.colHeight.HeaderText = "height";
+            this.colHeight.Name = "colHeight";
+            this.colHeight.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
+            this.colHeight.Width = 42;
+            // 
+            // colSprts
+            // 
+            this.colSprts.HeaderText = "Sprites";
+            this.colSprts.Name = "colSprts";
+            this.colSprts.Width = 42;
+            // 
+            // colTiles
+            // 
+            this.colTiles.HeaderText = "Tiles";
+            this.colTiles.Name = "colTiles";
+            this.colTiles.Width = 42;
+            // 
+            // colFlipX
+            // 
+            this.colFlipX.HeaderText = "X";
+            this.colFlipX.MinimumWidth = 20;
+            this.colFlipX.Name = "colFlipX";
+            this.colFlipX.ToolTipText = "Genrate extra X flipped frame?";
+            this.colFlipX.Width = 20;
+            // 
+            // colFlipY
+            // 
+            this.colFlipY.HeaderText = "Y";
+            this.colFlipY.MinimumWidth = 20;
+            this.colFlipY.Name = "colFlipY";
+            this.colFlipY.ToolTipText = "Genrate extra Y flipped frame?";
+            this.colFlipY.Width = 20;
+            // 
+            // colFlipXY
+            // 
+            this.colFlipXY.HeaderText = "XY";
+            this.colFlipXY.MinimumWidth = 20;
+            this.colFlipXY.Name = "colFlipXY";
+            this.colFlipXY.ToolTipText = "Genrate extra XY flipped frame?";
+            this.colFlipXY.Width = 20;
+            // 
+            // toolStripButtonOpen
+            // 
+            this.toolStripButtonOpen.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.toolStripButtonOpen.Image = ((System.Drawing.Image)(resources.GetObject("toolStripButtonOpen.Image")));
+            this.toolStripButtonOpen.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.toolStripButtonOpen.Name = "toolStripButtonOpen";
+            this.toolStripButtonOpen.Size = new System.Drawing.Size(23, 22);
+            this.toolStripButtonOpen.Text = "Open stage";
+            this.toolStripButtonOpen.ToolTipText = "Open";
+            this.toolStripButtonOpen.Click += new System.EventHandler(this.toolStripButtonOpen_Click);
+            // 
+            // toolStripButtonSave
+            // 
+            this.toolStripButtonSave.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.toolStripButtonSave.Image = global::Framer.Properties.Resources.disk;
+            this.toolStripButtonSave.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.toolStripButtonSave.Name = "toolStripButtonSave";
+            this.toolStripButtonSave.Size = new System.Drawing.Size(23, 22);
+            this.toolStripButtonSave.Text = "Save";
+            this.toolStripButtonSave.Click += new System.EventHandler(this.toolStripButtonSave_Click);
+            // 
+            // toolStripButtonZoomOut
+            // 
+            this.toolStripButtonZoomOut.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.toolStripButtonZoomOut.Image = global::Framer.Properties.Resources.magifier_zoom_out;
+            this.toolStripButtonZoomOut.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.toolStripButtonZoomOut.Name = "toolStripButtonZoomOut";
+            this.toolStripButtonZoomOut.Size = new System.Drawing.Size(23, 22);
+            this.toolStripButtonZoomOut.Text = "Scale down";
+            this.toolStripButtonZoomOut.Click += new System.EventHandler(this.toolStripButtonZoomOut_Click);
+            // 
+            // toolStripButtonZoomIn
+            // 
+            this.toolStripButtonZoomIn.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.toolStripButtonZoomIn.Image = global::Framer.Properties.Resources.magnifier_zoom_in;
+            this.toolStripButtonZoomIn.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.toolStripButtonZoomIn.Name = "toolStripButtonZoomIn";
+            this.toolStripButtonZoomIn.Size = new System.Drawing.Size(23, 22);
+            this.toolStripButtonZoomIn.Text = "Scale up";
+            this.toolStripButtonZoomIn.Click += new System.EventHandler(this.toolStripButtonZoomIn_Click);
+            // 
             // Framer
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -529,6 +553,7 @@
             this.Name = "Framer";
             this.Text = "Framer";
             this.Load += new System.EventHandler(this.Form1_Load);
+            this.Shown += new System.EventHandler(this.Framer_Shown);
             this.Paint += new System.Windows.Forms.PaintEventHandler(this.Form1_Paint);
             this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.Form1_KeyDown);
             this.MouseDown += new System.Windows.Forms.MouseEventHandler(this.Form1_MouseDown);
@@ -583,15 +608,18 @@
         private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn4;
         private System.Windows.Forms.CheckBox chkBoxGridMode;
         private System.Windows.Forms.Button btnAddFrame;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
+        private System.Windows.Forms.ToolStripLabel toolStripLabel2;
+        private System.Windows.Forms.ToolStripComboBox toolStripComboBoxSystem;
         private System.Windows.Forms.DataGridViewTextBoxColumn colPosX;
         private System.Windows.Forms.DataGridViewTextBoxColumn colPosY;
         private System.Windows.Forms.DataGridViewTextBoxColumn colWidth;
         private System.Windows.Forms.DataGridViewTextBoxColumn colHeight;
         private System.Windows.Forms.DataGridViewTextBoxColumn colSprts;
         private System.Windows.Forms.DataGridViewTextBoxColumn colTiles;
-        private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
-        private System.Windows.Forms.ToolStripLabel toolStripLabel2;
-        private System.Windows.Forms.ToolStripComboBox toolStripComboBoxSystem;
+        private System.Windows.Forms.DataGridViewCheckBoxColumn colFlipX;
+        private System.Windows.Forms.DataGridViewCheckBoxColumn colFlipY;
+        private System.Windows.Forms.DataGridViewCheckBoxColumn colFlipXY;
     }
 }
 

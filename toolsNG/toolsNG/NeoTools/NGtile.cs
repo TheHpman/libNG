@@ -85,10 +85,6 @@ namespace NeoTools
             for (int y = 0; y < 16; y++)
                 for (int x = 0; x < 16; x++)
                 {
-                    /*byte index = 0;
-                    if (((posX + x) >= 0) && ((posY + y) >= 0) && ((posX + x) < srcBmp.Width) && ((posY + y) < srcBmp.Height))
-                        index = (byte)pal.IndexOf(srcBmp.GetPixel(posX + x, posY + y));
-                    */
                     byte index;
                     try
                     {
