@@ -1,8 +1,8 @@
 BIN= $(GDK)/bin
 LIB= $(GDK)/lib
 
-SRC_LIB= $(GDK)/srcNG/
-RES_LIB= $(GDK)/srcNG/res
+SRC_LIB= $(GDK)/src/libNG
+RES_LIB= $(GDK)/src/libNG/res
 INCLUDE_LIB= $(GDK)/inc
 
 SHELL= $(BIN)/sh
@@ -87,11 +87,11 @@ cleanAsm: cleanasm
 
 
 $(LIB)/libNG.a: cmd_
-	$(AR) rs $(LIB)/libNG.a --plugin=liblto_plugin.dll @cmd_
+	$(AR) rs $(LIB)/libNG.a --plugin=liblto_plugin-0.dll @cmd_
 	$(RM) cmd_
 
 $(LIB)/libNG_debug.a: cmd_
-	$(AR) rs $(LIB)/libNG_debug.a --plugin=liblto_plugin.dll @cmd_
+	$(AR) rs $(LIB)/libNG_debug.a --plugin=liblto_plugin-0.dll @cmd_
 	$(RM) cmd_
 
 cmd_ : $(OBJ_LIB)
