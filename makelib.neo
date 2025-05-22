@@ -1,8 +1,8 @@
 BIN= $(GDK)/bin
 LIB= $(GDK)/lib
 
-SRC_LIB= $(GDK)/src/libNG
-RES_LIB= $(GDK)/src/libNG/res
+SRC_LIB= $(GDK)/srcNG
+RES_LIB= $(GDK)/srcNG/res
 INCLUDE_LIB= $(GDK)/inc
 
 SHELL= $(BIN)/sh

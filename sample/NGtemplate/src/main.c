@@ -87,7 +87,7 @@ void doSettings()
 	if (BIOS.MVS_FLAG)
 	{
 		// MVS
-		creditsP1 = BIOS.DEVMODE ? &BIOS.CREDITS.P1 : &CAB_CREDITS_P1;
+		creditsP1 = BIOS.DEVMODE[0] ? &BIOS.CREDITS.P1 : &CAB_CREDITS_P1;
 		creditsP2 = (BIOS.COUNTRY_CODE != COUNTRY_USA) ? creditsP1 : creditsP1 + 1; // USA is 2 chutes
 	}
 	else
@@ -130,7 +130,7 @@ void printCredits()
 	if (BIOS.MVS_FLAG)
 		fixPrintf1(PRINTINFO(18, 29, 4, 3), "LV-%x", localSetting_difficulty + 1);
 
-	// (there's usually a credit/lvl soft dip setting to turn off display of each item)
+	// (there's usually a credit/lvl soft dip setting to turn on/off display of each item)
 }
 
 void initBackupRAM()
