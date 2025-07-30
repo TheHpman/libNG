@@ -40,7 +40,7 @@ namespace parseBanks
                 FileStream fs2;
                 if (args[0].LastIndexOf('.') == -1)
                     fileName = args[0];
-                else fileName = args[0].Substring(0, args[0].LastIndexOf('.') + 1);
+                else fileName = args[0].Substring(0, args[0].LastIndexOf('.'));
                 // P1
                 fs.Seek(0, SeekOrigin.Begin);
                 fs.Read(bankData, 0, bankData.Length);

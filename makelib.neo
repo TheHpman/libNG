@@ -1,9 +1,7 @@
-BIN= $(GDK)/bin
-LIB= $(GDK)/lib
-
+include $(GDK)/common.mk
+# NG directories
 SRC_LIB= $(GDK)/srcNG
 RES_LIB= $(GDK)/srcNG/res
-INCLUDE_LIB= $(GDK)/inc
 
 SHELL= $(BIN)/sh
 RM= $(BIN)/rm
@@ -32,9 +30,9 @@ OBJ_LIB+= $(SRC_LIB_C:.c=.o)
 
 LST_LIB= $(SRC_LIB_C:.c=.lst)
 
-INCS_LIB= -I$(INCLUDE_LIB) -I$(SRC_LIB) -I$(RES_LIB)
+INCS_LIB= -I$(INC_LIB) -I$(SRC_LIB) -I$(RES_LIB)
 DEFAULT_FLAGS_LIB= -m68000 -Wall -Wa,--register-prefix-optional -fno-builtin $(INCS_LIB) -B$(BIN)
-FLAGSZ80_LIB= -i$(SRC_LIB) -i$(INCLUDE_LIB)
+FLAGSZ80_LIB= -i$(SRC_LIB) -i$(INC_LIB)
 
 
 #release: FLAGS_LIB= $(DEFAULT_FLAGS_LIB) -O1 -fomit-frame-pointer -flto
@@ -87,11 +85,11 @@ cleanAsm: cleanasm
 
 
 $(LIB)/libNG.a: cmd_
-	$(AR) rs $(LIB)/libNG.a --plugin=liblto_plugin-0.dll @cmd_
+	$(AR) rs $(LIB)/libNG.a $(LTO_PLUGIN) @cmd_
 	$(RM) cmd_
 
 $(LIB)/libNG_debug.a: cmd_
-	$(AR) rs $(LIB)/libNG_debug.a --plugin=liblto_plugin-0.dll @cmd_
+	$(AR) rs $(LIB)/libNG_debug.a $(LTO_PLUGIN) @cmd_
 	$(RM) cmd_
 
 cmd_ : $(OBJ_LIB)
