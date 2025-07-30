@@ -21,16 +21,19 @@ pictureInit:
 	.set	_flip, _ARGS+24+2	;* word
 		movem.l	d2/d6/a2-a3, -(sp)				;* push regs			
 		move.l	_picture(sp), a0				;* a0=p				16
-
-	#if	BANKING_ENABLE
-		move.b	_pictInfo(sp), REG_BANKING			;* bankswitch			24
-	#endif
-
 		move.l	_pictInfo(sp), a1				;* a1=pi			16
 		move.l	a1, P_PICTUREINFO(a0) 				;* p->info=pi			16
 
 		movea.l	SC1ptr, a2					;* a2=SC1ptr			20
 		movea.l	SC234ptr, a3					;* a3=SC234ptr			20
+
+	#if	BANKING_ENABLE
+		moveq	#0, d0
+		move.b	P_PICTUREINFO(a0), d0
+		move.b	d0, REG_BANKING					;* bankswitch
+		move.w	#BANKING_CMD, (a2)+				;* setup banking cmd
+		move.w	d0, (a2)+
+	#endif
 	
 		move.w	PI_TILEWIDTH(a1), d0				;* d0=tilewidth			12
 		subq.w	#1, d0						;* width loop			4
@@ -79,13 +82,6 @@ pictureInit:
 		move.l	PI_MAPS(d2.w, a1), a1				;* a1=col#0 addr		18
 
 		;* write
-	#if	BANKING_ENABLE
-		move.w	#BANKING_CMD, (a2)+
-		clr.b	(a2)+
-		move.b	P_PICTUREINFO(a0), (a2)+
-	;*	move.w	P_BANK-1(a0), (a2)+				;* -1: align fix
-	#endif
-	
 		move.l	d1, (a2)+					;* queue SC1 cmd		12
 		move.l	a1, (a2)+					;* queue SC1 addr		12
 		move.l	d6, (a3)+					;* queue Y info			12

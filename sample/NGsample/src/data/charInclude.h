@@ -34,3 +34,6 @@ extern const paletteInfo tf4layers_Palettes;
 extern const spriteInfo bmary_spr;
 extern const paletteInfo bmary_spr_Palettes;
 #include "../gfx/bmary_spr/bmary_spr.h"
+extern const spriteInfo portraits_spr;
+extern const paletteInfo portraits_spr_Palettes;
+#include "../gfx/portraits_spr/portraits_spr.h"

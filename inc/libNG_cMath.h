@@ -49,7 +49,6 @@ typedef struct __attribute__((packed, aligned(2))) palHandle
 } palHandle;
 
 
-
 extern palette palBuffer[256];		/**< color data buffer */
 extern palHandle palHandles[256];	/**< hanldes for palettes commands & data */
 extern u8 palTransferPending;		/**< flag for palette transfer pending (couldn't transfer all in one VBlank) */
@@ -82,6 +81,36 @@ void cMathLoadPalette(u16 slot, u16 count, u16 cmd, palette *pal);
 *      Command to apply to selected palette(s)
 */
 void cMathSetCommand(u16 slot, u16 count, u16 cmd);
+
+
+#define CMATH_EFFECT_XOR	0x0000
+#define CMATH_EFFECT_ADD	0x0004
+#define CMATH_EFFECT_ADD_HALF	0x0008
+#define CMATH_EFFECT_SUB	0x000C
+#define CMATH_EFFECT_SUB_HALF	0x0010
+#define CMATH_EFFECT_DESATURATE	0x0014
+
+#define CMATH_EFFECT(effect,count)	(((effect)<< 16)+(count))
+#define CMATH_COLOR(r,g,b)		((r)<<16)+((g)<<8)+(b)
+
+/**
+*  \brief
+*      Apply a color math effect to one or more palette.
+*      Source and destination palette can be the same.
+*  \param srcPal
+*      Pointer to source palette data.
+*  \param dstPal
+*      Pointer to destination palette data.
+*  \param effect_count
+*      Effect type and number of palettes to apply effect to.
+*      Packed as longword, use CMATH_EFFECT helper macro.
+*  \param effectColor
+*      Color for effect compute.
+*      Packed as longword, use CMATH_COLOR helper macro.
+*      RGB values are 0-31.
+*      Value is ignored for desaturate effect.
+*/
+void cMathPalEffect(u16 *srcPal, u16 *dstPal, u32 effect_count, u32 effectColor);
 
 
 #endif	// COLORMATH_ENABLE

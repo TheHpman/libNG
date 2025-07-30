@@ -131,4 +131,16 @@
   <pict id="tf4layers">
     <file>gfx\tf4layers.png</file>
   </pict>
+  <sprt id="portraits_spr" pal="strips" palrange="0,2,2" flips="xyz">
+   <file>gfx\2kportraits.png</file>
+    <frame outline="32,32:240,128" flips="x" customOutline="0,0:144,128">
+      <hwspr relocate="0,32">32,64:112,96</hwspr>
+      <hwspr relocate="80,0">208,32:64,128</hwspr>
+      <hwspr relocate="16,0">144,32:64,80</hwspr>
+    </frame>
+    <frame outline="64,176:208,144" customOutline="0,0:116,144">
+      <hwspr relocate="20,64">64,240:96,80</hwspr>
+      <hwspr relocate="0,0">160,176:112,128</hwspr>
+    </frame>
+  </sprt>
 </chardata>

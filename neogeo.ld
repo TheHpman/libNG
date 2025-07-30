@@ -205,51 +205,51 @@ SECTIONS
 	} > rom01
 
 /*
-	.text.bank02 :
+	.bank02 :
 	{
 		FILL(0xff);
 		SHORT(0x4202)
-		KEEP(*(.text.bank02))
+		KEEP(*(.bank02))
 		. = ORIGIN(rom02) + LENGTH(rom02) - 0;
 	} > rom02
 /*
-	.text.bank03 :
+	.bank03 :
 	{
 		FILL(0xff);
 		SHORT(0x4203)
-		KEEP(*(.text.bank03))
+		KEEP(*(.bank03))
 		. = ORIGIN(rom03) + LENGTH(rom03) - 0;
 	} > rom03
 /*
-	.text.bank04 :
+	.bank04 :
 	{
 		FILL(0xff);
 		SHORT(0x4204)
-		KEEP(*(.text.bank04))
+		KEEP(*(.bank04))
 		. = ORIGIN(rom04) + LENGTH(rom04) - 0;
 	} > rom04
 /*
-	.text.bank05 :
+	.bank05 :
 	{
 		FILL(0xff);
 		SHORT(0x4205)
-		KEEP(*(.text.bank05))
+		KEEP(*(.bank05))
 		. = ORIGIN(rom05) + LENGTH(rom05) - 0;
 	} > rom05
 /*
-	.text.bank06 :
+	.bank06 :
 	{
 		FILL(0xff);
 		SHORT(0x4206)
-		KEEP(*(.text.bank06))
+		KEEP(*(.bank06))
 		. = ORIGIN(rom06) + LENGTH(rom06) - 0;
 	} > rom06
 /*
-	.text.bank07 :
+	.bank07 :
 	{
 		FILL(0xff);
 		SHORT(0x4207)
-		KEEP(*(.text.bank07))
+		KEEP(*(.bank07))
 		. = ORIGIN(rom07) + LENGTH(rom07) - 0;
 	} > rom07
 /*  */

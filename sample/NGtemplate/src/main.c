@@ -1,3 +1,13 @@
+/*
+Template NEO-GEO program
+------------------------
+
+This template demonstrates how to properly handle bios interactions
+for proper sequencing, coinage and bookkeeping.
+
+You can copy this folder when starting a new project.
+*/
+
 #include <neogeo.h>
 
 typedef struct __attribute__((packed, aligned(2))) bkp_ram_info
@@ -12,23 +22,23 @@ typedef struct __attribute__((packed, aligned(2))) bkp_ram_info
 		};
 		struct
 		{
-			u8 debugDip1_1 : 1;
-			u8 debugDip1_2 : 1;
-			u8 debugDip1_3 : 1;
-			u8 debugDip1_4 : 1;
-			u8 debugDip1_5 : 1;
-			u8 debugDip1_6 : 1;
-			u8 debugDip1_7 : 1;
 			u8 debugDip1_8 : 1;
+			u8 debugDip1_7 : 1;
+			u8 debugDip1_6 : 1;
+			u8 debugDip1_5 : 1;
+			u8 debugDip1_4 : 1;
+			u8 debugDip1_3 : 1;
+			u8 debugDip1_2 : 1;
+			u8 debugDip1_1 : 1;
 
-			u8 debugDip2_1 : 1;
-			u8 debugDip2_2 : 1;
-			u8 debugDip2_3 : 1;
-			u8 debugDip2_4 : 1;
-			u8 debugDip2_5 : 1;
-			u8 debugDip2_6 : 1;
-			u8 debugDip2_7 : 1;
 			u8 debugDip2_8 : 1;
+			u8 debugDip2_7 : 1;
+			u8 debugDip2_6 : 1;
+			u8 debugDip2_5 : 1;
+			u8 debugDip2_4 : 1;
+			u8 debugDip2_3 : 1;
+			u8 debugDip2_2 : 1;
+			u8 debugDip2_1 : 1;
 		};
 	};
 	// first 2 bytes are always reserved for debug dips
@@ -55,20 +65,20 @@ static const u16 fixPalettes[] = {
     0x8000, 0x8444, 0x0111, 0xf555, 0xf666, 0x7777, 0x8888, 0x8000, 0x8000, 0x8000, 0x8000, 0x8000, 0x8000, 0x8000, 0x8000, 0x8000};
 
 // local game settings
-#define LEVEL_1 0
-#define LEVEL_2 1
-#define LEVEL_3 2
-#define LEVEL_4 3
-#define LEVEL_5 4
-#define LEVEL_6 5
-#define LEVEL_7 6
-#define LEVEL_8 7
+#define LEVEL_1	0
+#define LEVEL_2	1
+#define LEVEL_3	2
+#define LEVEL_4	3
+#define LEVEL_5	4
+#define LEVEL_6	5
+#define LEVEL_7	6
+#define LEVEL_8	7
 
-#define LNG_ENGLISH 0
-#define LNG_SPANISH 1
-#define LNG_FRENCH 2
-#define LNG_GERMAN 3
-#define LNG_JAPANESE 8
+#define LNG_ENGLISH	0
+#define LNG_SPANISH	1
+#define LNG_FRENCH	2
+#define LNG_GERMAN	3
+#define LNG_JAPANESE	8
 
 #define SOFTDIP_DIFFICULTY	6
 #define SOFTDIP_DEMOSOUND	7
@@ -123,7 +133,7 @@ void printCredits()
 	//	/!\ all credits values are BCD format
 
 	// left side for two chutes only
-	if(creditsP1 != creditsP2)
+	if (creditsP1 != creditsP2)
 		fixPrintf1(PRINTINFO(3, 29, 4, 3), "CR %02x", *creditsP1);
 	fixPrintf1(PRINTINFO(28, 29, 4, 3), "CR %02x", *creditsP2);
 
@@ -157,11 +167,11 @@ void customSplash()
 }
 
 const char joinMessages[][21] = {
-	"    INSERT COIN     \0",
-	"   PRESS 1P START   \0",
-	"   PRESS 2P START   \0",
-	"PRESS 1P OR 2P START\0",
-	"                    \0"};
+    "    INSERT COIN     \0",
+    "   PRESS 1P START   \0",
+    "   PRESS 2P START   \0",
+    "PRESS 1P OR 2P START\0",
+    "                    \0"};
 
 void printJoinMsg()
 {
@@ -175,8 +185,10 @@ void printJoinMsg()
 	{
 		u8 idx = 0;
 
-		if (*creditsP1) idx += 1;
-		if (*creditsP2 > ((creditsP1 != creditsP2) ? 0 : 1)) idx += 2;
+		if (*creditsP1)
+			idx += 1;
+		if (*creditsP2 > ((creditsP1 != creditsP2) ? 0 : 1))
+			idx += 2;
 		joinMsg = (char *)joinMessages[idx];
 	}
 	// non VBL synced print will do for this test program
@@ -192,11 +204,9 @@ void titleDisplay()
 	fixPrint(PRINTINFO(14, 7, 4, 3), "TITLE SCREEN");
 	fixPrint(PRINTINFO(18, 24, 4, 3), "TIME");
 
-	while (1)
+	while (SCClose(), waitVBlank(), 1)
 	{
 		// no need to check for timeout, BIOS will handle that
-		SCClose();
-		waitVBlank();
 
 		printJoinMsg();
 		fixPrintf1(PRINTINFO(19, 25, 4, 3), "%02x", BIOS.COMPULSION_TIMER);
@@ -216,8 +226,7 @@ void attractDemo()
 
 	while (timer--)
 	{
-		SCClose();
-		waitVBlank();
+		SCClose(), waitVBlank();
 
 		printJoinMsg();
 		fixPrintf1(PRINTINFO(2, 4, 4, 3), "Attract demo timer:%d ", timer);
@@ -232,79 +241,76 @@ void game()
 	clearFixLayer();
 	backgroundColor = NGCOLOR_LIGHTGREEN;
 
-	while (1)
+	while (SCClose(), waitVBlank(), 1)
 	{
-		SCClose();
-		waitVBlank();
-
 		if (((BIOS.PLAYER_MODE.P1 == PLAYER_MODE_NEVER_PLAYED) || (BIOS.PLAYER_MODE.P1 == PLAYER_MODE_GAMEOVER)) &&
 		    ((BIOS.PLAYER_MODE.P2 == PLAYER_MODE_NEVER_PLAYED) || (BIOS.PLAYER_MODE.P2 == PLAYER_MODE_GAMEOVER)))
 			return;
 
 		switch (BIOS.PLAYER_MODE.P1)
 		{
-			case PLAYER_MODE_NEVER_PLAYED:
-			case PLAYER_MODE_GAMEOVER:
-				fixPrint(PRINTINFO(3, 8, 4, 3), "P1: not playing");
-				if (*creditsP1 || FREE_PLAY)
-				{
-					BIOS.PLAYER_MODE.P1 = PLAYER_MODE_NEVER_PLAYED; // home fix
-					fixPrint(PRINTINFO(3, 9, 4, 3), "PRESS START");
-				}
-				else
-					fixPrint(PRINTINFO(3, 9, 4, 3), "INSERT COIN");
-				break;
-			case PLAYER_MODE_PLAYING:
-				fixPrint(PRINTINFO(3, 8, 4, 3), "P1: playing    ");
-				fixPrint(PRINTINFO(3, 9, 4, 3), " A to kill ");
-				if (BIOS.P1.EDGE.A)
-				{
-					BIOS.PLAYER_MODE.P1 = PLAYER_MODE_CONTINUE;
-					timer1 = 10 * 60;
-				}
-				break;
-			case PLAYER_MODE_CONTINUE:
-				fixPrintf1(PRINTINFO(3, 8, 4, 3), "P1: cont. ? %03d", timer1);
-				if (*creditsP1 || FREE_PLAY)
-					fixPrint(PRINTINFO(3, 9, 4, 3), "PRESS START");
-				else
-					fixPrint(PRINTINFO(3, 9, 4, 3), "INSERT COIN");
-				if (!timer1--)
-					BIOS.PLAYER_MODE.P1 = PLAYER_MODE_GAMEOVER;
-				break;
+		case PLAYER_MODE_NEVER_PLAYED:
+		case PLAYER_MODE_GAMEOVER:
+			fixPrint(PRINTINFO(3, 8, 4, 3), "P1: not playing");
+			if (*creditsP1 || FREE_PLAY)
+			{
+				BIOS.PLAYER_MODE.P1 = PLAYER_MODE_NEVER_PLAYED; // home fix
+				fixPrint(PRINTINFO(3, 9, 4, 3), "PRESS START");
+			}
+			else
+				fixPrint(PRINTINFO(3, 9, 4, 3), "INSERT COIN");
+			break;
+		case PLAYER_MODE_PLAYING:
+			fixPrint(PRINTINFO(3, 8, 4, 3), "P1: playing    ");
+			fixPrint(PRINTINFO(3, 9, 4, 3), " A to kill ");
+			if (BIOS.P1.EDGE.A)
+			{
+				BIOS.PLAYER_MODE.P1 = PLAYER_MODE_CONTINUE;
+				timer1 = 10 * 60;
+			}
+			break;
+		case PLAYER_MODE_CONTINUE:
+			fixPrintf1(PRINTINFO(3, 8, 4, 3), "P1: cont. ? %03d", timer1);
+			if (*creditsP1 || FREE_PLAY)
+				fixPrint(PRINTINFO(3, 9, 4, 3), "PRESS START");
+			else
+				fixPrint(PRINTINFO(3, 9, 4, 3), "INSERT COIN");
+			if (!timer1--)
+				BIOS.PLAYER_MODE.P1 = PLAYER_MODE_GAMEOVER;
+			break;
 		}
 
 		switch (BIOS.PLAYER_MODE.P2)
 		{
-			case PLAYER_MODE_NEVER_PLAYED:
-			case PLAYER_MODE_GAMEOVER:
-				fixPrint(PRINTINFO(23, 8, 4, 3), "P2: not playing");
-				if (*creditsP2 || FREE_PLAY)
-				{
-					BIOS.PLAYER_MODE.P2 = PLAYER_MODE_NEVER_PLAYED; // home fix
-					fixPrint(PRINTINFO(23, 9, 4, 3), "PRESS START");
-				}
-				else
-					fixPrint(PRINTINFO(23, 9, 4, 3), "INSERT COIN");
-				break;
-			case PLAYER_MODE_PLAYING:
-				fixPrint(PRINTINFO(23, 8, 4, 3), "P2: playing    ");
-				fixPrint(PRINTINFO(23, 9, 4, 3), " A to kill ");
-				if (BIOS.P2.EDGE.A)
-				{
-					BIOS.PLAYER_MODE.P2 = PLAYER_MODE_CONTINUE;
-					timer2 = 10 * 60;
-				}
-				break;
-			case PLAYER_MODE_CONTINUE:
-				fixPrintf1(PRINTINFO(23, 8, 4, 3), "P2: cont. ? %03d", timer2);
-				if (*creditsP2 || FREE_PLAY)
-					fixPrint(PRINTINFO(23, 9, 4, 3), "PRESS START");
-				else
-					fixPrint(PRINTINFO(23, 9, 4, 3), "INSERT COIN");
-				if (!timer2--)
-					BIOS.PLAYER_MODE.P2 = PLAYER_MODE_GAMEOVER;
-				break;
+		case PLAYER_MODE_NEVER_PLAYED:
+		case PLAYER_MODE_GAMEOVER:
+			fixPrint(PRINTINFO(23, 8, 4, 3), "P2: not playing");
+			if (*creditsP2 || FREE_PLAY)
+			{
+				BIOS.PLAYER_MODE.P2 = PLAYER_MODE_NEVER_PLAYED; // home fix
+				fixPrint(PRINTINFO(23, 9, 4, 3), "PRESS START");
+			}
+			else
+				fixPrint(PRINTINFO(23, 9, 4, 3), "INSERT COIN");
+			break;
+		case PLAYER_MODE_PLAYING:
+			fixPrint(PRINTINFO(23, 8, 4, 3), "P2: playing    ");
+			fixPrint(PRINTINFO(23, 9, 4, 3), " A to kill ");
+			if (BIOS.P2.EDGE.A)
+			{
+				BIOS.PLAYER_MODE.P2 = PLAYER_MODE_CONTINUE;
+				timer2 = 10 * 60;
+			}
+			break;
+		case PLAYER_MODE_CONTINUE:
+			fixPrintf1(PRINTINFO(23, 8, 4, 3), "P2: cont. ? %03d", timer2);
+			if (*creditsP2 || FREE_PLAY)
+				fixPrint(PRINTINFO(23, 9, 4, 3), "PRESS START");
+			else
+				fixPrint(PRINTINFO(23, 9, 4, 3), "INSERT COIN");
+			if (!timer2--)
+				BIOS.PLAYER_MODE.P2 = PLAYER_MODE_GAMEOVER;
+			break;
 		}
 	}
 }
@@ -314,7 +320,7 @@ void USER()
 	// main entry point, handles USER requests from BIOS
 	// this sub MUST return to give back control to BIOS
 
-	if(!BIOS.DEVMODE)
+	if (!BIOS.DEVMODE)
 		bkp_data.debugDips = 0;
 	initGfx();
 	clearFixLayer();
@@ -325,20 +331,20 @@ void USER()
 	// check what the BIOS wants
 	switch (BIOS.USER_REQUEST)
 	{
-		case USER_REQUEST_INIT:
-			initBackupRAM();
-			return; // not break
-		case USER_REQUEST_SPLASH:
-			customSplash();
-			return; // not break
-		case USER_REQUEST_DEMO:
-			doSettings();
-			attractDemo();
-			break;
-		case USER_REQUEST_TITLE:
-			doSettings();
-			titleDisplay();
-			break;
+	case USER_REQUEST_INIT:
+		initBackupRAM();
+		return; // not break
+	case USER_REQUEST_SPLASH:
+		customSplash();
+		return; // not break
+	case USER_REQUEST_DEMO:
+		doSettings();
+		attractDemo();
+		break;
+	case USER_REQUEST_TITLE:
+		doSettings();
+		titleDisplay();
+		break;
 	}
 	// coming from demo/title, was a game started?
 	if ((BIOS.PLAYER_MODE.P1 == PLAYER_MODE_PLAYING) || (BIOS.PLAYER_MODE.P2 == PLAYER_MODE_PLAYING))

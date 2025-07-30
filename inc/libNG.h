@@ -17,6 +17,7 @@
 #define __attribute__(att) /* VS Code fix */
 #endif
 
+
 /*******************************
 	INCLUDES
 *******************************/
@@ -89,6 +90,81 @@
  */
 #define backgroundColor		(*(vu16*)BACKGROUND_COLOR)
 
+
+// macros seems to compile better without post inscrement, as
+// GCC appears stubborn to not use post increment address registers
+// for thoses.
+#define	NO_POST_INCREMENT	1
+
+#if	NO_POST_INCREMENT
+//** SC macros
+/**
+ *  \brief
+ *      Add a sprite control block 1 job to buffer
+ *
+ *  \param addr
+ *      VRAM address
+ *  \param size
+ *      Tile size
+ *  \param pal
+ *      Base palette
+ *  \param data
+ *      Pointer to data
+ */
+#define SC1Put(addr,size,pal,data)	{*SC1ptr=((pal)<<24)|((size)<<17)|(addr);*(SC1ptr+1)=(u32)(data);SC1ptr+=2;}
+
+/**
+ *  \brief
+ *      Add a sprite control block 1 job to buffer, pre formatted command
+ *
+ *  \param cmd
+ *      Formatted command
+ *  \param data
+ *      Pointer to data
+ */
+#define SC1PutQuick(cmd,data)		{*SC1ptr=(u32)(cmd);*(SC1ptr+1)=(u32)(data);SC1ptr+=2;}
+
+/**
+ *  \brief
+ *      Add a sprite control block 2/3/4 job to buffer
+ *
+ *  \param addr
+ *      VRAM address
+ *  \param data
+ *      VRAM data
+ */
+#define SC234Put(addr,data)		{*SC234ptr=(addr);*(SC234ptr+1)=(data);SC234ptr+=2;}
+
+/**
+ *  \brief
+ *      Add a palette job to buffer
+ *
+ *  \param num
+ *      Palette #
+ *  \param count
+ *      # of palettes to copy
+ *  \param data
+ *      Pointer to color data
+ */
+#define palJobPut(num,count,data)	{*palJobsPtr=(((count)-1)<<16)|((num)<<5);*(palJobsPtr+1)=(u32)(data);palJobsPtr+=2;}
+
+/**
+ *  \brief
+ *      Add a FIX layer print job to buffer
+ *
+ *  \param x
+ *      FIX layer X position
+ *  \param y
+ *      FIX layer Y position
+ *  \param mod
+ *      VRAM modulo (FIX_LINE_WRITE/FIX_COLUMN_WRITE)
+ *  \param pal
+ *      Base palette
+ *  \param addr
+ *      Pointer to FIX data
+ */
+#define fixJobPut(x,y,mod,pal,addr)	{*fixJobsPtr=(((0x7000+((x)<<5)+(y))<<16)|(((pal)<<12)|(mod)));*(fixJobsPtr+1)=(u32)(addr);fixJobsPtr+=2;}
+#else // NO_POST_INCREMENT
 //** SC macros
 /**
  *  \brief
@@ -156,7 +232,7 @@
  *      Pointer to FIX data
  */
 #define fixJobPut(x,y,mod,pal,addr)	{*fixJobsPtr++=(((0x7000+((x)<<5)+(y))<<16)|(((pal)<<12)|(mod)));*fixJobsPtr++=(u32)(addr);}
-
+#endif // NO_POST_INCREMENT
 
 //** misc VRAM macros
 #define	SPR_STICK		0x0040
@@ -291,6 +367,7 @@ extern vu32	libNG_frameCounter;		/**< "real" frame counter. (dropped frames won'
 extern vu32	libNG_droppedFrames;		/**< dropped frames counter */
 extern void	*VBL_callBack;			/**< VBlank callback function pointer */
 extern void	*VBL_skipCallBack;		/**< VBlank callback function pointer (dropped frame) */
+extern _LSPCMODE_W	LSPCmode;		/**< LSPC Autoanim settings, vblank will refresh MODE register with this value */
 
 // ========== draw lists ==========
 extern u32	SC1[SC1_BUFFER_SIZE];
@@ -304,7 +381,6 @@ extern u32	*fixJobsPtr;
 extern u16	libNG_drawListReady;
 
 // ========== timer interrupt related ==========
-extern u16	LSPCmode;			/**< LSPC default mode for timer interrupt mode */
 extern u32	TIbase;				/**< Start value for timer interrupt counter */
 extern u32	TIreload;			/**< Reload value for timer interrupt counter */
 extern u16	*TInextTable;			/**< Pointer to next frame data table for timer interrupt mode */
@@ -322,6 +398,12 @@ extern const	char libID[];			/**< Library version & build datetime */
 	FUNCTIONS PROTOTYPES
 *******************************/
 //** base stuff
+
+/**
+*  \brief
+*      Bank to set bank number
+*/
+#define setBankNum(bank)		(*(vu8*)REG_BANKING)=(bank)
 
 /**
 *  \brief
@@ -558,7 +640,7 @@ u16 sprintf3(u32 printInfo, u16 *dst, char *fmt, ...);
 
 
 #if SOUNDBUFFER_ENABLE
-// need to expose data as it is internal use
+// no need to expose data as it is internal use
 //extern u8 sndBuffer[SOUNDBUFFER_SIZE];
 //extern u16 sndBufferIndexRW;
 

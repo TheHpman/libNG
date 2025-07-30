@@ -900,7 +900,7 @@ namespace Animator
             boxGrid.Rows.Clear();
         }
 
-        private void openFolder(string path)
+        private void openFolder(string path, bool folderDrop = false)
         {
             int i, j;
             string[] files;
@@ -909,7 +909,10 @@ namespace Animator
             bool foundfile = true;
             List<animStep> steps = null;
             int frameNum = 0;
-            
+
+            if (folderDrop)
+                folderBrowserDialog1.SelectedPath = path;
+
             //if (/*folderBrowserDialog1.ShowDialog() == DialogResult.OK*/)
             if(Directory.Exists(path))
             {
@@ -1134,24 +1137,24 @@ namespace Animator
 
             baseName = frameList[0].ID.Substring(0, frameList[0].ID.LastIndexOf("_"));
 
-            asmOut += string.Format("{0}_animations:\n", baseName);
+            asmOut += string.Format("{0}_animations:" + Environment.NewLine, baseName);
             for (i = 0; i < animationList.Count; i++)
             {
                 steps = animationList[i].getSteps();
-                cOut += string.Format("#define {0}_ANIM_{1} {2}\n", baseName.ToUpper(), animationList[i].ID, i);
+                cOut += string.Format("#define {0}_ANIM_{1} {2}" + Environment.NewLine, baseName.ToUpper(), animationList[i].ID, i);
                 //asmOut += string.Format("{0}_anim_{1}:\n\t.word\t0x{2:x4}, 0x{6:x4}\t;* {2} steps, {6} repeats\n\t.long\t{3}_anim_{4}_steps, {5}\t;* steplist, link\n",
                 //    baseName, animationList[i].ID,      //label
                 //    animationList[i].steps.Count,       //stepcount
                 //    baseName, animationList[i].ID,      //steplist
                 //    animationList[i].link == "" ? "0x00000000" : string.Format("{0}_anim_{1}", baseName, animationList[i].link),
                 //    animationList[i].repeats);          //link
-                asmOut += string.Format("\t.long\t{0}_anim_{1}_steps\t;* steplist\n",
+                asmOut += string.Format("\t.long\t{0}_anim_{1}_steps\t;* steplist" + Environment.NewLine,
                     baseName, animationList[i].ID      //steplist
                     );
-                asmOut2 += string.Format("{0}_anim_{1}_steps:\n", baseName, animationList[i].ID);
+                asmOut2 += string.Format("{0}_anim_{1}_steps:" + Environment.NewLine, baseName, animationList[i].ID);
                 for (j = 0; j < steps.Count; j++)
                 {
-                    asmOut2 += string.Format("\t.long\t{0}\t;* frame ptr\n\t.word\t0x{1:x4}, 0x{2:x4}, 0x{3:x4}, 0x{4:x4}, 0x{5:x4}\t;* flipShiftX, shiftX, flipShiftY, shiftY, duration\n",
+                    asmOut2 += string.Format("\t.long\t{0}\t;* frame ptr" + Environment.NewLine + "\t.word\t0x{1:x4}, 0x{2:x4}, 0x{3:x4}, 0x{4:x4}, 0x{5:x4}\t;* flipShiftX, shiftX, flipShiftY, shiftY, duration" + Environment.NewLine,
                         steps[j].frameID,
                         (short)-(frameList[steps[j].frameNum].bmp.Width + steps[j].offsetX - 1),
                         (short)steps[j].offsetX,
@@ -1374,7 +1377,7 @@ namespace Animator
         {
             string[] files = (string[])e.Data.GetData(DataFormats.FileDrop, false);
             if (Directory.Exists(files[0]))
-                openFolder(files[0]);
+                openFolder(files[0], true);
         }
 
         private void Animator_DragOver(object sender, DragEventArgs e)

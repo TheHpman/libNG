@@ -611,8 +611,10 @@ SC1_01tile:	_WRITE_TILE_
 
 
 SC1_setBank:
+	#if	BANKING_ENABLE
 		swap	d0						;* restore lower word
 		move.b	d0, REG_BANKING					;* set bank
+	#endif
 		move.l	a3, d0						;* d0=pal/size/addr (prefetched in a3)
 		_SC1_PROCESS_SUB_BLOCK_
 
@@ -660,18 +662,18 @@ dataReady:
 		move.l	a2, d1						;*				4
 		beq.s	9f						;* check ptr value		8 not taken, 10 taken		//0x00 ptr, disable
 
-		ori.w	#0x00b0, d0					;*				8	//load when lowwrite, load when 0
+		ori.w	#0x00b0, d0					;*				8	//load when lowwrite, load when 0, enable
 		move.w	d0, (6, a1)					;* sets LSPC mode		12
 
 		swap	d2						;*				4
 		move.w	d2, (8, a1)					;* MSB				12
 		swap	d2						;*				4
-		move.w	d2, (0xa, a1)					;* LSB				12	//timer loaded & running <-- couting from here (376~394)
+		move.w	d2, (0xa, a1)					;* LSB				12	//timer loaded & running <-- counting from here (376~394)
+	;	move.l	d2, (8, a1)					;* MSB+LSB			16	//timer loaded & running <-- counting from here (376~394)
 
-		andi.w	#0xff9f,d0					;*				8	//load when 0
+		andi.w	#0xff9f,d0					;*				8	//load when 0, enable
 		move.w	d0, (6,a1)					;* sets mode			12
-		move.w	TIreload, (8, a1)				;* MSB				24
-		move.w	TIreload+2, (0xa, a1)				;* LSB				24	//reload value
+		move.l	TIreload, (8, a1)				;* MSB+LSB			32	//reload value
 
 		;* setup data ptr in USP
 		tst.l	(a2)						;* 1st data is 0?		12
@@ -682,14 +684,15 @@ dataReady:
 		;* null ptr or empty data, disable timer
 9:		andi.w	#0xff0f, d0					;* disable timer		8
 		move.w	d0, (6, a1)					;* sets mode			12
-		bra.s	libNG_vblank_fromTI				;*				10
+
+		tst.b	libNG_drawListReady				;* draw list rdy?		16
+		bne.s	libNG_vblank_fromTI				;* yes, jump to regular IRQ code
+	;*	[ falls through to frameskip ]
 
 
 ;* /******************************************************************************
 ;* 				libNG_vblank
 ;* ******************************************************************************/
-splash_screen:
-		jmp	SYSTEM_INT1					;* bios splash screen
 frameskip:
 	#if	FRAMESKIP_KICK_DOG
 		move.b	d0, REG_WATCHDOG
@@ -699,10 +702,13 @@ frameskip:
 		beq.s	0f
 		jsr	cMathFlushBlocks
 	#endif
-0:		add.l	#1, libNG_droppedFrames
+0:		addq.l	#1, libNG_droppedFrames
 		jsr	SYSTEM_IO
 		move.l	VBL_skipCallBack, a0
 		bra.w	VBL_end						;*				10
+
+splash_screen:
+		jmp	SYSTEM_INT1					;* bios splash screen
 
 .globl libNG_vblank
 libNG_vblank:
@@ -711,14 +717,19 @@ libNG_vblank:
 		movem.l	d0-d7/a0-a6, -(sp)				;*				128
 
 		;* user control
-libNG_vblank_fromTI:
 		tst.b	libNG_drawListReady				;* draw list rdy?		16
 		beq.s	frameskip					;* is 0, nope, not ready to draw!! frame skipping!! ohnoez!!	//10 taken, 8 if not
 
+		;* update autoanim settings
+		move.w	LSPCmode, d0
+		and.w	#0xff0f, d0
+		move.w	d0, REG_LSPCMODE
+
+libNG_vblank_fromTI:
 		tst.b	BIOS_DEVMODE					;* dev mode?			16
 		beq.s	0f						;*				8 not taken, 10 taken
-		move.l	0x10e.w, a4					;* backup ram ptr
-		btst	#0, (1, a4)					;* dip 2-1 ?
+		move.l	0x10e.w, a0					;* backup ram ptr
+		btst	#0, (1, a0)					;* dip 2-1 ?
 		beq.s	0f
 		move.w	#0x4f00, _METER_COLOR				;* JOB_RED			20
 0:
@@ -729,18 +740,17 @@ libNG_vblank_fromTI:
 	#endif
 		;******************************************
 
-
+		;* setup registers
 		lea	REG_VRAM_ADDR, a5				;* a0=vram addr			12
 		lea	2(a5), a6					;* a6=vram RW			8
 		move.w	#1, 2(a6) 					;* vram modulo			16
-
+	#if	BANKING_ENABLE
+		lea	REG_BANKING, a4
+	#endif
 
 		;*** process SC1 jobs *********************
 		lea	SC1table, a0					;* a0=offset table		12
 		lea	SC1, a2						;* a2=buffer			12
-	#if	BANKING_ENABLE
-		lea	REG_BANKING, a4
-	#endif
 		moveq	#0, d1						;* must clear d1		4
 		moveq	#0, d3						;* 0 for scaled blanks		4
 
@@ -760,10 +770,8 @@ SC234jobs:
 
 		moveq	#32, d3
 		moveq	#16, d2
-	;*	cmpi.w	#32, d1						;*				8
 		cmp.w	d3, d1						;*				4
 		bge.s	SC234_32					;*				10 taken, 8 if not
-	;*	cmpi.w	#16, d1						;*				8
 		cmp.w	d2, d1						;*				4
 		bge.s	SC234_16					;*				10 taken, 8 if not
 		bra.s	SC234_finish					;*				10
@@ -778,10 +786,8 @@ SC234_16:
 	.rept	16
 		move.l	(a2)+, (a5)					;* write addr+data		20
 	.endr
-	;*	cmpi.w	#32, d1						;*				8
 		cmp.w	d3, d1						;*				4
 		bge.s	SC234_32					;*				10 taken, 8 if not
-	;*	cmpi.w	#16, d1						;*				8
 		cmp.w	d2, d1						;*				4
 		bge.s	SC234_16					;*				10 taken, 8 if not
 
@@ -798,28 +804,25 @@ SC234jobs_end:
 
 		;*** process palette jobs ******************
 PALjobs:
-	#if	BANKING_ENABLE
-		lea	REG_BANKING, a0
-	#endif
-		lea	PALJOBS, a4					;* a4=buffer			12
+		lea	PALJOBS, a3					;* a3=buffer			12
 		move.l	#PAL_RAM, d1					;* pal ram base			12
 
-0:		move.l	(a4)+, d0					;* d0=count/ pal#		12
+0:		move.l	(a3)+, d0					;* d0=count/ pal#		12
 		bmi.s	PALjobs_end					;* ==ffffffffff? => end		8 not taken, 10 taken
 1:
 	#if	BANKING_ENABLE
-		move.b	(a4), (a0)					;* bankswitch			12
+		move.b	(a3), (a4)					;* bankswitch			12
 	#endif
-		move.l	(a4)+, a2					;* a2=data ptr			12
+		move.l	(a3)+, a1					;* a2=data ptr			12
 		move.w	d0, d1						;*				4
-		move.l	d1, a3						;* a3=pal addr			4
+		move.l	d1, a0						;* a0=pal addr			4
 		swap	d0						;* d0=pal count-1		4
 3:
 	.rept	8
-		move.l	(a2)+, (a3)+					;* copy palette			20*8=160
+		move.l	(a1)+, (a0)+					;* copy palette			20*8=160
 	.endr
 		dbra	d0, 3b						;* loop				10 taken, 14 if not
-		move.l	(a4)+, d0					;* d0 = next count/pal#		12
+		move.l	(a3)+, d0					;* d0 = next count/pal#		12
 		bpl.s	1b						;* ==ffffffffff? => end		8 not taken, 10 taken
 PALjobs_end:
 		;******************************************

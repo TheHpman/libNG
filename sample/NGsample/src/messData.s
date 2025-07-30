@@ -27,6 +27,11 @@
 	.word	3, 0x7000+\posY+(\posX<<5)
 	.endm
 
+	.macro	MESS_PRINT_ADDR addr
+	.word	4
+	.long	\addr
+	.endm
+
 	.macro	MESS_ADDR_INC amount
 	.word	5, \amount
 	.endm
@@ -42,11 +47,19 @@
 	.align	2
 	.endm
 
-	;*8
-	;* 8*16 print
+	.macro	MESS_PRINT16 palBank, data endcode=0xff
+	.byte	\palBank, 8
+	.ascii	"\data"
+	.byte	\endcode
+	.align	2
+	.endm
 
-	;*9
-	;* 8*16 JP print
+	.macro	MESS_PRINT16_JP palBank, data endcode=0xff
+	.byte	\palBank, 9
+	.ascii	"\data"
+	.byte	\endcode
+	.align	2
+	.endm
 
 	.macro	MESS_CALL addr
 	.word	0xa
@@ -67,8 +80,9 @@
 	.word	\data
 	.endm
 
-
-	;* mess data
+;* ====================================
+;* misc control info messages for demos
+;* ====================================
 	.globl	mess_pictureDemo
 mess_pictureDemo:
 		MESS_FORMAT (_FMT_BYTE_DATA+_FMT_ENDCODE), 0x43ff
@@ -129,6 +143,8 @@ mess_aspriteDemo:
 		MESS_PRINT "1P B/C/D: toggle anim/anchor/debug"
 		MESS_POS 2, 6
 		MESS_PRINT "2P \x12\x13\x10\x11: scale sprite"
+		MESS_POS 2, 7
+		MESS_PRINT "2P A: toggle color blink"
 		MESS_END
 
 	.globl	mess_scrollDemo
@@ -148,10 +164,12 @@ mess_scrollDemo:
 		MESS_END
 
 _submess_blankLine:
-		MESS_PRINT "                                       "	;* minus 1 to keep job meter
+		MESS_PRINT "                                       "	;* minus 1 to keep job meter in this demo program
 		MESS_RETURN
 
-
+;* =======================
+;* fix layer demo messages
+;* =======================
 	.globl	mess_logos
 mess_logos:
 	.long	mess_logo95, mess_logo96, mess_logo97, mess_logo98
@@ -191,49 +209,98 @@ mess_logo98:
 		MESS_END
 
 
+;* ========================
+;* typewriter demo messages
+;* ========================
+	.globl	mess_typerWindow
+mess_typerWindow:
+		MESS_FORMAT (_FMT_BYTE_DATA+_FMT_ENDCODE), 0x81ff	;* 0x81 hi byte, 0xff end code
+		MESS_AUTOINC 0x20
+		MESS_POS 7, 20
+		MESS_CALL _windowLine
+		MESS_CALL _windowLine
+		MESS_CALL _windowLine
+		MESS_CALL _windowLine
+		MESS_END
 
+_windowLine:	MESS_PRINT16	0x81, "                          "
+		MESS_ADDR_INC 1
+		MESS_RETURN
+
+	.globl	typerHandle
+	.globl	mess_typerData
+mess_typerData:
+		MESS_FORMAT (_FMT_BYTE_DATA+_FMT_SETSIZE), 0x8118	;* 0x81 hi byte, 24 bytes size
+		MESS_AUTOINC 0x20
+		MESS_POS 8, 21
+		MESS_CALL _mess_typerPrint
+		MESS_FORMAT (_FMT_BYTE_DATA+_FMT_SETSIZE), 0x8218
+		MESS_POS 8, 22
+		MESS_CALL _mess_typerPrint
+		MESS_END
+
+_mess_typerPrint:
+		MESS_PRINT_ADDR typerHandle
+		MESS_ADDR_INC 2
+		MESS_RESUME
+		MESS_ADDR_INC 2
+		MESS_RESUME
+		MESS_RETURN
+
+;* ==================
 ;* main menu messages
+;* ==================
 .globl mess_menu
 mess_menu:
 		MESS_FORMAT (_FMT_BYTE_DATA+_FMT_ENDCODE), 0x43ff
 		MESS_AUTOINC 0x20
-		MESS_POS 8, 20
+		MESS_POS 8, 22
 		MESS_PRINT "(P1 START - Menu return)"
 		MESS_FORMAT (_FMT_BYTE_DATA+_FMT_ENDCODE), 0x53ff
 		MESS_POS 8, 28
-		MESS_PRINT "libNG tests - @2024 Hpman"
+		MESS_PRINT "libNG tests - @2025 Hpman"
 		MESS_END
 
+	_menuLine = 10
+
 mess_menuItem0_msg:
-		MESS_POS 8, 10
+		MESS_POS 8, _menuLine+0
 		MESS_PRINT "Picture demo"
 		MESS_RETURN
 mess_menuItem1_msg:
-		MESS_POS 8, 11
+		MESS_POS 8, _menuLine+1
 		MESS_PRINT "Scroller demo"
 		MESS_RETURN
 mess_menuItem2_msg:
-		MESS_POS 8, 12
+		MESS_POS 8, _menuLine+2
 		MESS_PRINT "Animated sprite demo"
 		MESS_RETURN
 mess_menuItem3_msg:
-		MESS_POS 8, 13
-		MESS_PRINT "Fix layer demo"
+		MESS_POS 8, _menuLine+3
+		MESS_PRINT "Hicolor sprite demo"
 		MESS_RETURN
 mess_menuItem4_msg:
-		MESS_POS 8, 14
-		MESS_PRINT "Raster demo A"
+		MESS_POS 8, _menuLine+4
+		MESS_PRINT "FIX layer demo"
 		MESS_RETURN
 mess_menuItem5_msg:
-		MESS_POS 8, 15
-		MESS_PRINT "Raster demo B"
+		MESS_POS 8, _menuLine+5
+		MESS_PRINT "Typewriter demo"
 		MESS_RETURN
 mess_menuItem6_msg:
-		MESS_POS 8, 16
-		MESS_PRINT "Color stream demo A"
+		MESS_POS 8, _menuLine+6
+		MESS_PRINT "Raster demo A"
 		MESS_RETURN
 mess_menuItem7_msg:
-		MESS_POS 8, 17
+		MESS_POS 8, _menuLine+7
+		MESS_PRINT "Raster demo B"
+		MESS_RETURN
+mess_menuItem8_msg:
+		MESS_POS 8, _menuLine+8
+		MESS_PRINT "Color stream demo A"
+		MESS_RETURN
+mess_menuItem9_msg:
+		MESS_POS 8, _menuLine+9
 		MESS_PRINT "Color stream demo B"
 		MESS_RETURN
 
@@ -248,11 +315,13 @@ mess_menuBase:
 		MESS_CALL mess_menuItem5_msg
 		MESS_CALL mess_menuItem6_msg
 		MESS_CALL mess_menuItem7_msg
+		MESS_CALL mess_menuItem8_msg
+		MESS_CALL mess_menuItem9_msg
 		MESS_RETURN
 
 .globl mess_menuMsgs
 mess_menuMsgs:
-	.long	mess_index0, mess_index1, mess_index2, mess_index3, mess_index4, mess_index5, mess_index6, mess_index7
+	.long	mess_index0, mess_index1, mess_index2, mess_index3, mess_index4, mess_index5, mess_index6, mess_index7, mess_index8, mess_index9
 
 mess_index0:
 		MESS_CALL mess_menuBase
@@ -294,4 +363,13 @@ mess_index7:
 		MESS_FORMAT (_FMT_BYTE_DATA+_FMT_ENDCODE), 0x23ff
 		MESS_CALL mess_menuItem7_msg
 		MESS_END
-
+mess_index8:
+		MESS_CALL mess_menuBase
+		MESS_FORMAT (_FMT_BYTE_DATA+_FMT_ENDCODE), 0x23ff
+		MESS_CALL mess_menuItem8_msg
+		MESS_END
+mess_index9:
+		MESS_CALL mess_menuBase
+		MESS_FORMAT (_FMT_BYTE_DATA+_FMT_ENDCODE), 0x23ff
+		MESS_CALL mess_menuItem9_msg
+		MESS_END

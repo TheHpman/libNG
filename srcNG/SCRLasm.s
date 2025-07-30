@@ -67,7 +67,7 @@ CFG_REFILL_DATALENGTH2	=	SC_CONFIG + 16
 
 ;*	void scrollerInit (scroller *s, scrollerInfo *si, ushort sprite, ushort palette, short posX, short posY) {
 scrollerInit:
-	.set	_ARGS, 4+40
+	.set	_ARGS, 4+44
 	.set	_scrlr, _ARGS		;* long
 	.set	_scrlInfo, _ARGS+4	;* long
 	.set	_baseSpr, _ARGS+8+2	;* word
@@ -75,7 +75,7 @@ scrollerInit:
 	.set	_posX, _ARGS+16+2	;* word
 	.set	_posY, _ARGS+20+2	;* word
 
-		movem.l	d2-d7/a2-a5, -(sp)				;* push
+		movem.l	d2-d7/a2-a6, -(sp)				;* push
 	
 		move.l	SC1ptr, a4					;* a4=SC1ptr
 		move.l	SC234ptr, a5					;*a5=SC234ptr			20
@@ -148,7 +148,7 @@ _noSplit:	;* straight strip, 32 tiles
 		move.w	d0, CFG_DATAINDEX2(a0)
 		bra.s	9f
 
-_shortStrip:	;* strip is < 32 tiles, no refills needed	TODO:<=32
+_shortStrip:	;* strip is < 32 tiles, no refills needed
 		move.w	d5, CFG_DATALENGTH(a0)				;*  12
 		moveq	#0, d0
 		move.w	d0, CFG_TILEINDEX(a0)
@@ -165,11 +165,9 @@ _shortStrip:	;* strip is < 32 tiles, no refills needed	TODO:<=32
 	;*	needed: posX, spr# SC2_data SC1_data SC1_addr
 	;*
 	;*	d0 d1 d2 d3 d4 d5 d6 d7
-	;*	a0 a1 a2
+	;*	a0:SC a1:SCI a2:colIndex a3
 	
-9:		lea	SCI_STRIPS(a1), a3				;* a3= strips prt array
-
-		move.l	_ARGS+16(sp), d1				;* d1=posX
+9:		move.l	_ARGS+16(sp), d1				;* d1=posX
 		move.w	d1, SC_POSX(a0)					;* save posX
 
 		;* lead sprite posX
@@ -201,9 +199,9 @@ _fillStripA:
 		move.w	d2, d4						;* baseSpr
 		add.w	d6, d4						;* + current index
 		move.w	d4, d3						;* (posX spr set)
-		lsl.w	#6, d4						;* *64 => base spr addr
-		add.w	CFG_TILEINDEX(a0), d4				;* add index*2
-		add.w	CFG_TILEINDEX(a0), d4				;* d4=SC1 pal,size*4|addr	;* see opt here
+		lsl.w	#5, d4						;* *64 => base spr addr (*32 *2)
+		add.w	CFG_TILEINDEX(a0), d4				;* add index *2
+		add.w	d4, d4						;* d4=SC1 pal,size*4|addr
 
 		add.w	#0x8400, d3
 		swap	d3						;* d3=addr|posX
@@ -213,28 +211,25 @@ _fillStripA:
 
 		add.w	d1, d1
 		add.w	d1, d1						;* strip index *=4
+		lea	SCI_STRIPS(a1,d1.w), a6				;* a6=ptr strip addr
 
-		move.l	(d1.w, a3), d0					;* d0=strip addr
-		and.w	#0xfffe, d0					;* safety for odd addr on overscroll
-		move.l	d0, a3
-
-		move.w	SCI_STRIPSIZE(a1), d0				;* d0= strip bytesize
-
-		move.l	a3, a1						;* save base strip addr
-		add.w	d5, a3						;* a3=strip addr + displacement
+		move.l	a6, a1						;* save base strip addr
 	
 		lsr.w	#2, d1						;* back to strip index
 
 0:		;* posX set
 		move.l	d3, (a5)+
-		add.w	#0x800, d3
+		add.w	#16<<7, d3
 	
 		;* SC1 pal, size & addr set
 		move.l	d4, (a4)+
 
 		;* SC1 data ptr set
-		move.l	a3, (a4)+					;* write addr
-		add.w	d0, a3						;* add strip size
+		move.l	(a6)+, d0
+		and.w	#~1, d0						;* overscroll even addr fix
+		move.l	d0, a3
+		add.w	d5, a3						;* add displacement
+		move.l	a3, (a4)+					;* write ptr
 	
 		;* set colNum[index]
 		move.w	d1, (a2)+
@@ -255,7 +250,7 @@ _fillStripA:
 1:		moveq	#0, d6						;* update current index
 		sub.w	#64*20, d4					;* spr 0 addr
 		sub.l	#0x10000*20, d3					;* spr 0 posX			16
-		sub.w	#42, a2
+		lea	-42(a2), a2
 		dbra	d7, 0b
 
 ;*-------------------------------------------
@@ -269,7 +264,8 @@ _fillStripB:
 		and.w	#0xffc0, d4					;* 2nd index is always 0
 	
 		swap	d5						;* swap to data index 2
-		add.w	d5, a1						;* a1=strip addr + displacement
+	;*	add.w	d5, a1						;* a1=strip addr + displacement
+		move.l	a1, a6
 
 		sub.w	#21*4, d1					;* back to leading sprite
 
@@ -279,8 +275,11 @@ _fillStripB:
 0:		move.l	d4, (a4)+
 
 		;* SC1 data ptr set
-		move.l	a1, (a4)+					;* write addr
-		add.w	d0, a1						;* add strip size
+		move.l	(a6)+, d0
+		and.w	#~1, d0						;* overscroll even addr fix
+		move.l	d0, a3
+		add.w	d5, a3						;* add displacement
+		move.l	a3, (a4)+					;* write ptr
 	
 		;* == to next strip ==
 		cmp.w	#20, d6
@@ -297,7 +296,7 @@ _fillStripB:
 
 9:		move.l	a5, SC234ptr					;* save SC234ptr
 		move.l	a4, SC1ptr					;* save SC1ptr
-		movem.l (sp)+, d2-d7/a2-a5				;* pull
+		movem.l (sp)+, d2-d7/a2-a6				;* pull
 9:		rts
 
 
@@ -329,7 +328,6 @@ scrollerSetPos:
 		move.l	SC_INFO(a0), a1					;* a1= scrollInfo
 		move.l	SC234ptr, a5					;* a5=SC234ptr			20
 		move.w	SC_BASESPRITE(a0), d2				;* d2=baseSprite
-		lea	SCI_STRIPS(a1), a3				;* a3= strips ptr array
 
 		;* handle sprites posX & posY
 		;* posY setup
@@ -365,7 +363,6 @@ scrollerSetPos:
 		add.w	d6, d6
 		add.w	d6, d6						;* lead spr index*4
 		lea	_sprIncrementTable(pc), a2
-	;*	lea	(d6.w, a2), a2
 		add.w	d6, a2
 
 	.rept	20
@@ -373,7 +370,7 @@ scrollerSetPos:
 		add.l	d4, d3						;* next spr			8
 		move.l	d5, (a5)+					;* write sprites posX		12
 		add.l	(a2)+, d5					;* next spr
-		add.w	#0x800, d5					;* +16 px
+		add.w	#16<<7, d5					;* +16 px
 	.endr
 		move.l	d3, (a5)+					;* write last sprite posY	12
 		move.l	d5, (a5)+					;* write sprites posX		12
@@ -538,7 +535,6 @@ _fullRefill_splitted:		;* splitted strip
 ;* a3	map ptrs
 ;* a4				strip_addr
 ;* a5	SC1ptr
-;* a6	sc_config
 
 _refillConfigDone:
 ;* setup: base strip addr base vram addr
@@ -562,9 +558,10 @@ _refillConfigDone:
 		move.w	d0, d4
 		add.w	d4, d4
 		add.w	d4, d4
-		move.l	(d4.w, a3), d1			
-		and.w	#0xfffe, d1					;* safety for odd addr on overscroll
-		move.l	d1, a4						;* a4= front strip data add
+		lea	SCI_STRIPS(a1,d4.w), a1
+		move.l	(a1)+, d1
+		and.w	#~1, d1						;* safety for odd addr on overscroll
+		move.l	d1, a4						;* a4= front strip data addr
 
 		move.w	d7, d4						;* d4=lead index
 		move.w	#20, d7
@@ -645,7 +642,10 @@ _loadNewStrip:
 		move.l	a3, (a5)+
 
 _nextStrip:
-		add.w	SCI_STRIPSIZE(a1), a4				;* point to next strip
+		move.l	(a1)+, d1					;* read to next strip ptr
+		and.w	#~1, d1						;* overscroll odd addr protect
+		move.l	d1, a4
+
 		addq.w	#1, d0						;* next data strip index
 
 		cmp.w	#20, d4

@@ -2,7 +2,10 @@
 
 REG_WATCHDOG		=	0x300001
 REG_VRAMRW		=	0x3c0002
+REG_LSPCMODE		=	0x3c0006
 REG_IRQACK		=	0x3c000c
+REG_TIMERSTOP		=	0x3c000e
+
 SYSTEM_RETURN		=	0xc00444
 BIOS_SYSTEM_MODE	=	0x10fd80
 
@@ -164,7 +167,7 @@ PRE_USER:
 		move.b	d0, REG_WATCHDOG
 
 		;* must clear sprites tilemap LSB, some
-		;* unibios versions only clear partially
+		;* older unibios versions only clear partially
 		lea	REG_VRAMRW, a0
 		move.w	#64, -2(a0)	;* set addr
 		move.w	#2, 2(a0)	;* set modulo
@@ -183,8 +186,14 @@ PRE_USER:
 		move.l	d0, VBL_skipCallBack
 		move.l	d0, TInextTable
 		move.l	#_dummyTIdata, TIcurrentData	;* sets up dummy data
+		;* init local LSPCmode value
+		move.w	#0x4000, LSPCmode
+		;* 50Hz timer disable
+		btst.b	#3, REG_LSPCMODE+1
+		beq.s	0f
+		move.w	#1, REG_TIMERSTOP
 
-		;* for CD only
+0:		;* for CD only
 	.if	_SYSTEM_NCD
 		bset	#7, BIOS_SYSTEM_MODE
 	.endif

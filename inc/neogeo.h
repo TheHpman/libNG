@@ -144,6 +144,33 @@
 #define REG_UPUNMAPFIX		(*(vu8*)0xff0149)	/**< Unmap upload zone to FIX (CD) */
 
 // LSPC chip
+typedef struct _LSPCMODE_R {
+	union {
+		u16 raw;
+		struct {
+			u16 lineCounter : 9;
+			u16 _pad : 3;
+			u16 is50Hz : 1;
+			u16 autoAnimCounter : 3;
+		};
+	};
+} _LSPCMODE_R;
+
+typedef struct _LSPCMODE_W {
+	union {
+		u16 raw;
+		struct {
+			u16 autoAnimSpeed : 8;
+			u16 mode_zeroReload : 1;
+			u16 mode_VblReload : 1;
+			u16 mode_WriteReload : 1;
+			u16 timerIrqEnable : 1;
+			u16 disableAutoAnim : 1;
+			u16 _pad : 3;
+		};
+	};
+} _LSPCMODE_W;
+
 typedef struct _LSPC {
 	union {
 		u32 ADDR_DATA;		/**< LSPC VRAM address & data register, 32bit access */
@@ -153,7 +180,7 @@ typedef struct _LSPC {
 		};
 	};
 	u16 MODULO;			/**< LSPC VRAM write modulo register */
-	u16 MODE;			/**< LSPC mode register */
+	_LSPCMODE_R MODE;		/**< LSPC mode register */
 	union {
 		u32 TIMER;		/**< LSPC timer value register, 32bit access */
 		struct {

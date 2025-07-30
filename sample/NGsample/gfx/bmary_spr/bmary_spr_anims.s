@@ -1,16 +1,3 @@
-	.macro	_ANM_END
-	.word	0xc000
-	.endm
-
-	.macro	_ANM_REPEAT _count
-	.word	0x8000, \_count
-	.endm
-
-	.macro	_ANM_LINK _id _ptr
-	.word	0xa000, \_id
-	.long	\_ptr
-	.endm
-
 bmary_spr_animations:
 	.long	bmary_spr_anim_IDLE_steps	;* steplist
 	.long	bmary_spr_anim_WALK_steps	;* steplist
@@ -106,3 +93,5 @@ bmary_spr_anim_NEWFMT_steps:
 	.long	bmary_spr_000f	;* frame ptr
 	.word	0xffe0, 0xffe1, 0xfffe, 0xff93, 0x0005	;* flipShiftX, shiftX, flipShiftY, shiftY, duration
 	_ANM_LINK 0x0005 bmary_spr_anim_NEWFMT_steps
+
+

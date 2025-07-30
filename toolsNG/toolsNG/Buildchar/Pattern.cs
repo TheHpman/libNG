@@ -322,19 +322,30 @@ namespace Buildchar
             data += string.Format("\t.long\t{0}_Palettes" + Environment.NewLine, objID);
             data += string.Format("\t.long\t{0}", isColorStream ? string.Format("{0}_colorStream", objID) : "0x00000000");
 
+            List<string> strips = new List<string>(0);
+            int idx;
+            string ptrData = "";
+            //string strips
             for (int i = 0; i < tileWidth; i++)
             {
-                if (i % 16 == 0) data += Environment.NewLine + "\t.long\t";
-                data += string.Format("{0}_strip{1:x4}{2}", objID, i, i % 16 != 15 ? (i == tileWidth - 1 ? "" : ", ") : "");
+                string strip = "";
+                for (int j = 0; j < tileHeight; j++)
+                    strip += tileAsm((i * tileHeight) + j) + (j != (tileHeight - 1) ? ", " : "");
+                if ((idx = strips.IndexOf(strip)) == -1)
+                {
+                    // new strip
+                    strips.Add(strip);
+                    idx = strips.Count - 1;
+                }
+                if (i % 16 == 0) ptrData += Environment.NewLine + "\t.long\t";
+                ptrData += string.Format("{0}_strip{1:x4}{2}", objID, idx, i % 16 != 15 ? (i == tileWidth - 1 ? "" : ", ") : "");
             }
-            data += Environment.NewLine + Environment.NewLine;
-
-            for (int i = 0; i < tileWidth; i++)
+            ptrData += string.Format(Environment.NewLine + "\t.long\t{0}_strip{1:x4}\t;* overshoot fix" + Environment.NewLine, objID, 0); //fix for last column overshoot (NGCD could reboot without it)
+            data += ptrData + Environment.NewLine;
+            for (int i = 0; i < strips.Count; i++)
             {
                 data += string.Format("{0}_strip{1:x4}:" + Environment.NewLine + "\t.word\t", objID, i);
-                for (int j = 0; j < tileHeight; j++)
-                    data += tileAsm((i * tileHeight) + j) + (j != (tileHeight - 1) ? ", " : "");
-                data += Environment.NewLine;
+                data += strips[i] + Environment.NewLine;
             }
             return data + Environment.NewLine;
         }

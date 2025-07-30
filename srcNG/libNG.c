@@ -4,7 +4,7 @@
 /******************************************************************/
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-const-variable"
-    const char libID[] = "libNG Ver 1.0 - Build:"__DATE__" "__TIME__;
+    const char libID[] = "libNG Ver 1.1 - Build:"__DATE__" "__TIME__;
 #pragma GCC diagnostic pop
 
 
@@ -32,7 +32,7 @@ u16	libNG_drawListReady;
 // default values will take about 10KB RAM
 
 // timer interrupt stuff
-u16	LSPCmode;		// mode to preserve
+_LSPCMODE_W	LSPCmode;	// LSPC mode (autoanim speed)
 u16	libNG_TIfunc[34];	// irq code space, internal
 u32	TIbase;			// timer base value
 u32	TIreload;		// timer reload value
@@ -107,7 +107,6 @@ void initGfx()
 	libNG_frameCounter = 0;
 	SCReset();
 	TIreload = TI_RELOAD;
-	LSPCmode = 0x1000;
 	TInextTable = 0;
 	unloadTIirq();
 	// jobMeterSetup(true);

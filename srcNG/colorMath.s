@@ -10,6 +10,34 @@
 .globl	palTransferPending
 .globl	palCommandPending
 
+
+	;* drgb RRRR GGGG BBBB
+	;* expected: d0.w=0xf
+	;* OUT > D2:R
+	;*	 D3:G
+	;*	 D4:B
+	.macro	splitColor src
+		move.b	(\src), d2		;* color MSB
+		move.w	(\src)+, d1		;* whole color
+		and.w	d0, d2			;* d2= RRRR
+		move.w	d1, d3
+		lsr.b	#4, d3
+		and.w	d0, d3			;* d3= GGGG
+		move.b	d1, d4
+		and.w	d0, d4			;* d4= BBBB
+
+		add.w	d1, d1
+		add.w	d1, d1
+		addx.b	d2, d2			;* d2 = RRRRr
+
+		add.w	d1, d1
+		addx.b	d3, d3			;* d3 = GGGGg
+
+		add.w	d1, d1
+		addx.b	d4, d4			;* d4 = BBBBb
+	.endm
+
+
 ;* ******************************************************************************
 ;* 		void cMathSetCommand(u16 slot, u16 count, u16 cmd)
 ;* ******************************************************************************
@@ -366,22 +394,7 @@ _computePalette:
 		moveq.l	#0xf, d0
 		moveq.l	#15-1, d5
 
-;* DRGB RRRR GGGG BBBB
-_computeColor:	move.b	(a1), d2		;* color MSB
-		and.w	d0, d2		
-		move.w	(a1)+, d1
-		move.w	d1, d3
-		move.b	d3, d4
-		add.w	d1, d1
-		add.w	d1, d1
-		addx.b	d2, d2			;* d2 = R
-		lsr.b	#4, d3
-		and.w	d0, d3
-		add.w	d1, d1
-		addx.b	d3, d3			;* d3 = G
-		and.w	d0, d4
-		add.w	d1, d1
-		addx.b	d4, d4			;* d4 = B
+_computeColor:	splitColor a1			;* d2 d3 d4 = R G B
 		move.b	(a4,d2.w), d2		;* R color index
 		move.b	(a5,d3.w), d3		;* G color index
 		move.b	(a6,d4.w), d4		;* B color index
@@ -1059,6 +1072,229 @@ FROM_MAX: ;* fade to color from white
 	.byte	0x12, 0x14, 0x16, 0x18, 0x1a, 0x1c, 0x1e, 0x20
 	.byte	0x20, 0x22, 0x24, 0x26, 0x28, 0x2a, 0x2c, 0x2e
 	.byte	0x30, 0x32, 0x34, 0x36, 0x38, 0x3a, 0x3c, 0x3e
+
+
+
+;* ******************************************************************************
+;* 	void cMathPalEffect(u16 *srcPal, u16 *dstPal, u32 effect_count, u32 effectColor);
+;* ******************************************************************************
+
+.globl	cMathPalEffect
+	.set	_ARGS, 4+(2*4)+(6*2)
+	.set	_srcPal, _ARGS		;* long
+	.set	_dstPal, _ARGS+4	;* long
+	.set	_effect, _ARGS+8	;* word
+	.set	_count, _ARGS+8+2	;* word
+	.set	_colorR, _ARGS+12+1	;* byte
+	.set	_colorG, _ARGS+12+2	;* byte
+	.set	_colorB, _ARGS+12+3	;* byte
+
+cMathPalEffect:
+		;* save registers
+		movem.w	d2-d7, -(sp)
+		move.l	a2, -(sp)
+		move.l	a3, -(sp)
+
+		;* bankswitch
+	#if	BANKING_ENABLE
+		move.b	_srcPal(sp), REG_BANKING
+	#endif
+
+		;* setup args
+		move.w	_count(sp), d1
+		beq.s	9f
+		subq.w	#1, d1
+		move.l	_srcPal(sp), a0
+		move.l	_dstPal(sp), a1
+		lea	_greens(pc), a2
+
+		move.b	_colorR(sp), d5
+		move.b	_colorG(sp), d6
+		move.b	_colorB(sp), d7
+
+		;* setup effect ptr
+		move.w	_effect(sp), d0
+		move.l	_effects(pc,d0.w), a3
+
+		;* process palette
+0:		move.w	(a0)+, (a1)+	;* color #0
+		move.l	#(0xf<<16)+15-1, d0
+		swap	d1		;* save pal count
+
+		;* process color
+1:		swap	d0		;* save color count
+		splitColor a0		;* d2 d3 d4 = R G B
+		jmp	(a3)
+
+_effects:
+	.long	effect_xor
+	.long	effect_add
+	.long	effect_addHalf
+	.long	effect_sub
+	.long	effect_subHalf
+	.long	effect_desaturate
+
+	.macro	iteratePalEffect
+		;* iterate color
+		swap	d0		;* restore color count
+		dbra	d0, 1b
+		;* iterate palette
+		swap	d1		;* restore pal count
+		dbra	d1, 0b
+		;* all finished
+		bra	9b
+	.endm
+
+		;* restore registers
+9:		move.l	(sp)+, a3
+		move.l	(sp)+, a2
+	;*	movem.w	(sp)+, d2-d7	;* nope, sign extends data registers!
+		move.w	(sp)+, d2
+		move.w	(sp)+, d3
+		move.w	(sp)+, d4
+		move.w	(sp)+, d5
+		move.w	(sp)+, d6
+		move.w	(sp)+, d7
+		rts
+
+
+effect_xor:
+		;* xor colors
+		eor.b	d5, d2
+		add.b	d2, d2
+		move.w	-64(a2,d2.w), d2	;* final R
+		eor.b	d6, d3
+		add.b	d3, d3
+		or.w	(a2,d3.w), d2		;* final R+G
+		eor.b	d7, d4
+		add.b	d4, d4
+		or.w	64(a2,d4.w), d2		;* final R+G+B
+		move.w	d2, (a1)+
+		iteratePalEffect
+
+effect_add:
+		;* color addition
+		move.w	#0x1f, d1
+		add.b	d5, d2
+		cmp.b	d1, d2
+		ble.s	0f
+		move.b	d1, d2
+0:		add.w	d2, d2
+		move.w	-64(a2,d2.w), d2	;* final R
+		add.b	d6, d3
+		cmp.b	d1, d3
+		ble.s	0f
+		move.b	d1, d3
+0:		add.w	d3, d3
+		or.w	(a2,d3.w), d2		;* final R+G
+		add.b	d7, d4
+		cmp.b	d1, d4
+		ble.s	0f
+		move.b	d1, d4
+0:		add.w	d4, d4
+		or.w	64(a2,d4.w), d2		;* final R+G+B
+		move.w	d2, (a1)+
+		iteratePalEffect
+
+effect_addHalf:
+		;* add + half (half is implicit by word data)
+		move.w	#0x3e, d1
+		add.b	d5, d2
+		and.w	d1, d2
+		move.w	-64(a2,d2.w), d2	;* final R
+		add.b	d6, d3
+		and.w	d1, d3
+		or.w	(a2,d3.w), d2		;* final R+G
+		add.b	d7, d4
+		and.w	d1, d4
+		or.w	64(a2,d4.w), d2		;* final R+G+B
+		move.w	d2, (a1)+
+		iteratePalEffect
+
+effect_sub:
+		;* color substraction
+		sub.b	d5, d2
+		bcc.s	0f
+		clr.b	d2
+0:		add.w	d2, d2
+		move.w	-64(a2,d2.w), d2	;* final R
+
+		sub.b	d6, d3
+		bls.s	0f
+		add.w	d3, d3
+		or.w	(a2,d3.w), d2		;* final R+G
+
+0:		sub.b	d7, d4
+		bls.s	0f
+		add.w	d4, d4
+		or.w	64(a2,d4.w), d2		;* final R+G+B
+
+0:		move.w	d2, (a1)+
+		iteratePalEffect
+
+effect_subHalf:
+		;* color substraction + half
+		move.w	#0x3e, d1
+		sub.b	d5, d2
+		bcc.s	0f
+		clr.b	d2
+0:		and.w	d1, d2
+		move.w	-64(a2,d2.w), d2	;* final R
+
+		sub.b	d6, d3
+		bls.s	0f
+		and.w	d1, d3
+		or.w	(a2,d3.w), d2		;* final R+G
+
+0:		sub.b	d7, d4
+		bls.s	0f
+		and.w	d1, d4
+		or.w	64(a2,d4.w), d2		;* final R+G+B
+
+0:		move.w	d2, (a1)+
+		iteratePalEffect
+
+
+
+	.macro	fTable factor
+	.set	_color, 0
+	.rept	32
+	.word	(((_color<<11)*\factor)/10)
+	.set	_color, _color+1
+	.endr
+	.endm
+
+_r03:	fTable 3
+
+;*	f = 0.2; // desaturate by 20%
+;*	L = 0.3*r + 0.6*g + 0.1*b;
+;*	new_r = r + f * (L - r);
+;*	new_g = g + f * (L - g);
+;*	new_b = b + f * (L - b);
+;*	doing factor 1.0 for now...
+
+effect_desaturate:
+		add.w	d2, d2
+		move.w	_r03(pc,d2.w), d1
+		add.w	d3, d3
+		add.w	_g06(pc,d3.w), d1
+		add.w	d4, d4
+		add.w	_b01(pc,d4.w), d1
+		lsr.w	#8, d1
+		addq.w	#4, d1		;* round up
+		lsr.w	#2, d1
+		and.w	#~1, d1		;* d1=L*2
+
+		move.w	-64(a2,d1.w), d2
+		or.w	(a2,d1.w), d2
+		or.w	64(a2,d1.w), d2
+		move.w	d2, (a1)+
+
+		iteratePalEffect
+
+_g06:	fTable 6
+_b01:	fTable 1
+
 
 ;* COLORMATH_ENABLE
 #endif
