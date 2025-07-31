@@ -112,7 +112,7 @@ u8 tickTyper()
 				break;
 			default:
 				*th->ptrBuffer++ = c;
-				if (!th->characterDelay /*th->counter*/)
+				if (!th->characterDelay)
 					goto _nextChar;
 			}
 		}
