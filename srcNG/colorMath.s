@@ -274,7 +274,7 @@ _whiteFill:	move.l	#0x7fff7fff, d0	;* R+G+B
 
 _colorFill:
 	.rept	8
-		move.l	d0, (a0)+
+		move.l	d0, (a0)+	;* no issue with reference color, as block 1st word will be 0'ed
 	.endr
 		clr.w	(a1)		;* clear cmd
 		move.w	#1, (a2)	;* flag block for copy
@@ -367,14 +367,14 @@ PAL_INC:
 
 _computePalette:
 		move.b	PH_ACC(a1), d0		;* d0= table index
-		moveq.l	#3, d4			;* speed bits
+		moveq	#3, d4			;* speed bits
 		and.w	PH_ACC(a1), d4		;* word read, speed in cmd lsb
 		move.b	PAL_INC(pc,d4.w), d5	;* d5= index mod
 		add.b	d5, PH_ACC(a1)		;* acc+step
 		bcs.s	_fadeOver
 
 		move.b	#1, palCommandPending	;* command not done
-		moveq.l	#7, d5
+		moveq	#7, d5
 		and.b	d0, d5
 		bne	_iterateCmd
 
@@ -387,12 +387,12 @@ _computePalette:
 		addq.w	#2, a1
 		add.w	d0, d0
 		add.w	d0, d0
-		lea.l	(a4,d0.w), a4
-		lea.l	(a5,d0.w), a5
-		lea.l	(a6,d0.w), a6
+		lea	(a4,d0.w), a4
+		lea	(a5,d0.w), a5
+		lea	(a6,d0.w), a6
 
-		moveq.l	#0xf, d0
-		moveq.l	#15-1, d5
+		moveq	#0xf, d0
+		moveq	#15-1, d5
 
 _computeColor:	splitColor a1			;* d2 d3 d4 = R G B
 		move.b	(a4,d2.w), d2		;* R color index
@@ -1117,12 +1117,12 @@ cMathPalEffect:
 		move.l	_effects(pc,d0.w), a3
 
 		;* process palette
-0:		move.w	(a0)+, (a1)+	;* color #0
+_nxtPal:	move.w	(a0)+, (a1)+	;* color #0
 		move.l	#(0xf<<16)+15-1, d0
 		swap	d1		;* save pal count
 
 		;* process color
-1:		swap	d0		;* save color count
+_nxtColor:	swap	d0		;* save color count
 		splitColor a0		;* d2 d3 d4 = R G B
 		jmp	(a3)
 
@@ -1137,10 +1137,10 @@ _effects:
 	.macro	iteratePalEffect
 		;* iterate color
 		swap	d0		;* restore color count
-		dbra	d0, 1b
+		dbra	d0, _nxtColor
 		;* iterate palette
 		swap	d1		;* restore pal count
-		dbra	d1, 0b
+		dbra	d1, _nxtPal
 		;* all finished
 		bra	9b
 	.endm
